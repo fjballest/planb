@@ -1,0 +1,1008 @@
+Como consecuencia de la generalización del ordenador personal y la aparición de la gran 
+cantidad de dispositivos móviles disponibles hoy en día,  el número de máquinas que utiliza
+al mismo tiempo un usuario ha crecido sustancialmente. Estos dispositivos son básicamente
+ordenadores, que aunque poseen distintas cualidades físicas y funcionales, ejecutan un sistema
+operativo convencional y están sometidos a las mismas necesidades de configuración y administración
+que un ordenador común. Entre esas necesidades se encuentra el proceso de identificación del usuario 
+y su posterior autenticación.
+
+El proceso de autenticación se realiza normalmente mediante la introducción de contraseñas 
+por teclado, aunque se han propuesto métodos que proporcionan menos obstrucción al usuario, como la
+autenticación mediante tarjetas Smartcard\cite{smartcard}, Ibuttons\cite{ibutton}, USB Tokens\cite{rsasecurity}
+o dispositivos biométricos como lectores de huellas digitales. 
+Esos métodos, aun siendo menos incómodos para el usuario que la introducción de contraseñas, siguen proporcionando
+obstrucción. Por otra parte, dependen de dispositivos lectores específicos que normalmente
+no están integrados en los propios dispositivos. Esto supone un problema a la hora de usar 
+dispositivos móviles y máquinas de propósito general. 
+
+Los sistemas tradicionales que proporcionan entrada simple al sistema ({\em Single Sign-On})
+están diseñados para entornos cliente/servidor en los que los usuarios trabajan con un único terminal,
+desde el que acceden a todos los servicios del entorno distribuido. Sin embargo, los usuarios de un entorno 
+de computación como el presentado en capítulos anteriores
+no trabajan en un sólo ordenador, sino que utilizan e interaccionan físicamente con un grupo de 
+ordenadores interconectados. De esta forma, el usuario necesitará autenticarse ante cada uno de los ordenadores
+que integran el espacio  con el que está interaccionando. 
+Teniendo en cuenta que la aparición de nuevos dispositivos en el sistema tiende a crecer
+debido a la progresiva miniaturización y el abaratamiento de los dispositivos móviles que
+dictó Moore\cite{moore65cramming}, el problema de la autenticación adquiere un importante papel 
+en este tipo de entornos. 
+
+Bajo estas circunstancias, los sistemas tradicionales de entrada simple al sistema que se han
+tratado en el capítulo dedicado al estado de la cuestión proporcionan una gran obstrucción 
+al usuario. 
+La autenticación explícita por parte del usuario rompe la ilusión de que el entorno ubicuo es 
+un único sistema y no un grupo de sistemas interconectados. 
+Por lo tanto, el uso de este tipo de sistemas de entrada simple al sistema no es propicio 
+para un entorno ubicuo.
+
+SHAD propone una solución para este problema basada en agentes que actúan como servidores 
+personales de claves para el usuario. Estos agentes tienen como objetivo proporcionar al usuario un acceso simple y 
+sin obstrucción al entorno de computación ubicuo, haciendo el uso de varias máquinas a la vez cómodo, 
+seguro y parcialmente transparente (dependiendo de las necesidades y preferencias plasmadas por el usuario)
+en lo que respecta a la autenticación. 
+Mediante los agentes SHAD, los dispositivos que pertenecen a un mismo usuario pueden compartir 
+sus secretos (claves, contraseñas, etc.), 
+propiciando un acceso simple al entorno ubicuo y conservando la ilusión de que se está trabajando en un único
+sistema. A continuación, se presentará la arquitectura de SHAD para ofrecer una entrada simple al sistema. 
+
+
+\section{Arquitectura del agente de SSO}
+\label{sso_cond}
+
+La arquitectura general del sistema se presenta en la figura \ref{arch0}. 
+Como se puede observar, la arquitectura
+se compone de  entidades principales:
+
+\begin{figure*}[t!]
+\centering
+\epsfig{file=figuras/sso_0.png, width=\textwidth}
+\caption{Arquitectura global del sistema de entrada simple (Single Sign-On) al sistema basada 
+en SHAD}
+\label{arch0}
+\end{figure*}
+
+
+\begin{itemize}
+	
+	\item {\bf  repositorio de secretos} del usuario es un fichero cifrado que contiene 
+	los secretos de usuario en un formato legible para
+	los humanos. El repositorio de secretos además incluye información que 
+	describe y restringe el uso de los mismos. 
+	Este fichero se encuentra cifrado con un algoritmo fuerte, y su contenido 
+	nunca se almacena en un soporte no volátil en claro.
+	El repositorio se puede almacenar de un soporte externo (p.e. de una tarjeta de 
+	memoria SD Card) o en  un servidor centralizado \footnote{Nótese que si se obtiene de un servidor 
+	centralizado, el usuario deberá tener interconexión
+	con esa partición de la red en el momento de obtenerlo, pudiendo peder la conectividad después
+	de obtener el repositorio. En el caso de usar un soporte externo, como 
+	una tarjeta SD card, el repositorio se puede
+	obtener sin tener conectividad con el resto del sistema}. Además de los secretos del usuario,
+	el repositorio contendrá las claves necesarias para contactar y autenticar las máquinas
+	del usuario.
+	
+	\item {\bf Aplicaciones.} Las aplicaciones son programas de usuario que acceden a los 
+	servicios disponibles en el
+	entorno ubicuo y fuera del mismo.. Comúnmente, estas aplicaciones necesitan autenticarse de alguna 
+	forma (mediante contraseñas, respuestas
+	de retos, obtención de credenciales, etc.) ante los servidores del sistema. Para llevar a 
+	cabo dicha autenticación,
+	los programas necesitan conocer secretos que normalmente les proporciona el usuario
+	 mediante un dispositivo de entrada.
+	Las aplicaciones pueden elegir entre: 
+	(i) intentarán obtener los secretos del agente SHAD local
+	y gestionar ellas mismas la autenticación o
+	(ii) delegar la autenticación en el agente SHAD local, de tal forma
+	que la lógica de la aplicación esté totalmente desacoplada de la lógica de seguridad. 
+	En el caso de que el agente SHAD no responda o no pueda llevar a cabo la autenticación,
+	las aplicaciones reclamarán el 
+	secreto al usuario de la forma tradicional.
+	
+	\item {\bf Sistema Operativo.} El sistema operativo proporcionará a las aplicaciones el acceso 
+	al agente SHAD local.
+	
+	\item {\bf El usuario.} El usuario del sistema es un humano que interacciona físicamente 
+	con el entorno ubicuo. El 
+	humano es el encargado de administrar sus propios dispositivos, como ya se ha explicado 
+	en el capítulo anterior.
+	Además, debe realizar una primera y única autenticación explicita para entrar en el sistema,
+	que servirá para descifrar el repositorio de secretos. 
+	También puede añadir nuevos secretos (que no están almacenados en el 
+	repositorio) a sus agentes.
+	Por último, el usuario puede 
+	proporcionar confirmaciones, que pueden requerirse para permitir la delegación
+	de ciertos secretos. 
+	El usuario puede cancelar y confirmar operaciones interactuando con el 
+	agente SHAD principal. 
+
+	\item {\bf El espacio inteligente} o entorno ubicuo, que puede ofrecer servicios tales como 
+	localización física de personas y objetos. El sistema de Single Sing-On puede sacar partido
+	de la información de localización, por ejemplo para pedir confirmación al usuario en 
+	ciertas situaciones. En todo caso, la arquitectura no puede depender de la información
+	suministrada por el espacio inteligente, ya que puede provocar dependencias de servicios
+	centralizados. Por lo tanto, el agente de SHAD debe ser capaz de operar sin los servicios 
+	que le ofrece el entorno ubicuo. 
+	Ell agente principal accederá a dicha información usando mecanismos
+	estándar que quedan fuera del ámbito de la arquitectura, por tanto la seguridad relacionada
+	con dicha información no se tratará en este capítulo. Además, el agente SHAD principal 
+	podrá comunicar notificaciones al espacio inteligente para aprovechar las infrastructuras
+	que ofrece para avisar al usuario de ciertas incidencias.
+	
+	\item{\bf Agentes SHAD.} Los agentes SHAD son los encargados de manejar la autenticación 
+	del usuario, normalmente
+	sin la necesidad de interactuar con este, dependiendo de la configuración. Como se detallará 
+	más adelante, 
+	el usuario es capaz de configurar el comportamiento de los agentes según sus preferencias 
+	y  su valoración
+	 del compromiso entre obstrucción y nivel de seguridad.  Un agente SHAD puede actuar de
+	dos formas distintas: como {\it agente principal} o como agente común. 
+
+\end{itemize}
+
+Un agente de SHAD que actua como {\it agente principal} ofrece los secretos del usuario 
+a los otros agentes SHAD, dependiendo de ciertas restricciones que serán tratadas más
+adelante.
+Cualquier agente puede asumir el  rol de agente principal, dependiendo de los 
+siguientes factores:
+
+%% solo puede haber un agente principal por partición de red <- falso, porque puede
+%% haber uniones posteriores y juntarse más de uno.
+
+\begin{itemize}
+	\item El descubrimiento de otro agente SHAD actuando como agente principal.
+	Cada dispositivo  ejecutará su agente al arrancar, y este iniciará un proceso 
+	de descubrimiento del  agente principal. Si el proceso de descubrimiento 
+	fracasa, el agente intentará adoptar el papel de agente principal. 
+
+	\item La capacidad de obtener el repositorio de claves del usuario.
+	Si el repositorio de secretos se encuentra en un sistema remoto, el agente debe tener 
+	conectividad con dicho sistema. En caso de que el repositorio se encuentre en una tarjeta
+	insertada en el dispositivo donde ejecuta el agente, este debe ser capaz de obtenerlo y 
+	copiar su contenido en la memoria principal. 
+
+	\item Una vez obtenido el repositorio, el agente 
+	debe ser capaz de descifrar su contenido. Para ello, el usuario debe realizar la {\bf única
+	autenticación explícita} que se requiere para operar en el sistema. Si el usuario no 
+	se autentica explicitamente ante el agente SHAD, este no puede proclamarse como 
+	agente principal. Dicha autenticación explíta puede consistir en la introducción de 
+	una contraseña, o la utilización de alguna tecnoloía biométrica o de algún otro dispositivo
+	de autenticación..
+\end{itemize}
+
+
+Aunque cualquier dispositivo del usuario es capaz de ejecutar el agente principal, este 
+está ideado para ejecutar en un dispositivo móvil que siempre se encuentra con el 
+usuario. 
+De esa forma, el usuario es capaz de atender a mensajes informativos relativos
+a la delegación de sus secretos y confirmar la delegación de determinados
+secretos.  
+A su vez, el repositorio de secretos está ideado para obtenerse de  una tarjeta de memoria
+directamente desde el dispositivo móvil, y de esa forma no  depender de 
+la conectividad para ofrecer {\em Single Sign-On} en 
+una partición separada del resto del sistema.
+No obstante, el usuario es libre
+de ejecutar su agente principal en cualquiera de sus máquinas, y de obtener su repositorio
+de secretos desde un servidor centralizado si así lo desea. 
+
+Una vez que un agente SHAD ha adoptado el papel de agente principal, 
+entonces puede suministrar secretos a los agentes SHAD que ejecutan en otros
+dispositivos pertenecientes al usuario, que actuarán como clientes.
+Los agentes cliente solicitarán al agente principal los secretos 
+requeridos por las aplicaciones que ejecutan en su dispositivo. 
+La delegación de los 
+secretos del usuario se lleva a cabo  dependiendo 
+de restricciones que tiene asociadas en el repositorio. En ningún caso se
+delegarán secretos a agentes SHAD que no puedan autenticarse ante el agente
+principal. Tampoco se podrán delegar secretos a agentes que no estén ejecutando
+en nombre del mismo usuario que el agente principal.
+
+En caso de fallo del agente principal, los 
+agentes clientes pueden intentar contactar entre ellos para poder 
+obtener secretos.  Si un agente SHAD cliente intenta contactar con
+su agente principal para obtener un secreto y no recibe respuesta, entonces
+iniciará un protocolo para intentar obtener el secreto de otros agentes
+SHAD de su mismo tipo. Si finalmente no obtiene respuesta de algún
+agente que posea dicho secreto, el agente intentará obtenerlo
+directamente del usuario. En ese caso se  preguntará al usuario mostrando
+un mensaje a través
+de la interfaz gráfica o de la consola del sistema local. 
+
+
+
+\section{Diseño del Agente SHAD}
+
+\subsection{Modelado de flujo de datos }
+
+El diseño del prototipo se ha llevado a cabo mediante Diagramas de 
+Flujo de Datos \cite{demarco79structured}.  Los diagramas de este tipo
+tienen dos funciones principales: (i) describir la forma en la que los datos
+se transforman según pasan por el sistema, y (ii) definir las funciones que 
+transforman o manejan los datos \cite{pressman97software}. Mediante 
+estos diagramas, se pretende modelar la funcionalidad de los procesos
+y definir las entidades internas de los agentes SHAD\footnote{Sin embargo, en esta
+sección no se pretende realizar un análisis o modelado exhaustivo del sistema.}.
+
+La figura \ref{arch0} muestra
+las entidades externas con las que los agentes de SHAD intercambian
+información. Por lo tanto esa figura es lequivalente a un diagrama de 
+contexto (diagrama de flujo de datos de nivel cero). Las entidades externas
+a un agente SHAD ya han sido definidas en la sección anterior.
+
+En los diagramas de nivel uno presentados en las figuras \ref{sso_dfdcli} y
+\ref{sso_dfdpri}
+se describe con más detalle el flujo de los 
+datos entre las entidades internas de los agentes. 
+Se han realizado dos diagramas distintos para describir el comportamiento
+del agente de SHAD, debido a que aunque los agentes son exactamente
+el mismo programa, pueden adoptar dos funcionalidades distintas dependiendo
+de las circunstancias que se den en tiempo de arranque.
+
+La figura \ref{sso_dfdcli}
+muestra el diagrama de flujo de datos de primer nivel de un agente SHAD
+común. Las entidades internas a un agente SHAD común son:
+
+\begin{itemize}
+	\item {\bf Anillo de secretos (RI).} Es un almacén de datos  
+	que contiene los secretos del usuario. 
+	También almacena las claves de las máquinas pertenecientes al usuario.
+	La memoria
+	en la que se almacena el anillo de secretos debe estar lo más  protegida posible
+	(no  debe poder depurarse ni volcarse a área de intercambio).
+
+	\item {\bf Módulo de descubrimiento (DM).}  Se encarga de descubrir al agente
+	principal en tiempo de arranque.  
+	Cada dispositivo capaz de arrancar agentes de SHAD tiene que tener una clave
+	privada asignada. Dicha clave privada ha debido asignarse en tiempo de 
+	configuración, y debe incluirse en el repositorio de secretos. De esta forma,
+	el agente principal puede autenticar mensajes de cualquier dispositivo configurado
+	para usar SHAD. La clave de la máquina se leerá de un componente hardware
+	local.
+	Si el módulo no es capaz de descubrir al agente principal, entonces
+	intentará obtener el repositorio de secretos para convertirse él mismo
+	en agente principal. Si logra descubrirlo, intentará establecer una sesión 
+	con él para poder reclamar secretos  cuando sea necesario.
+
+	\item {\bf Módulo de secretos (SM).} Es la entidad encargada de proporcionar
+	autenticación a las aplicaciones. Puede proporcionar auteticación encargándose
+	de la lógica de autenticación del servicio o proporcionando el secreto necesario
+	para que la aplicación se encargue de ella. El usuario debe ser capaz de añadir 
+	nuevos secretos en el anillo a través de esta entidad. 
+	El módulo necesita usar un secreto para proporcionar autenticación a 
+	una aplicación. En primera instancia, intenta obtener el secreto del 
+	anillo. Si no es capaz de obtenerlo, insta al {\bf módulo recolector} para
+	obtenerlo.
+
+	\item {\bf Módulo recolector (RM).} Es el encargado de conseguir los secretos
+	necesarios del agente principal. Para ello, se pone en contacto con el agente 
+	principal e inicia el protocolo de obtención de secretos. Si el protocolo no prospera,
+	entonces pide al {\bf módulo Peer to Peer} que intente obtener el secreto..
+
+	\item {\bf Módulo Peer to Peer (P2PM).} Cuando el módulo recolector no es
+	capaz de conseguir un secreto del agente principal, entonces el 
+	{\bf módulo de secretos} pide al {\bf módulo Peer to Peer} que intente conseguir
+	el secreto de otros agentes SHAD comunes. El módulo P2P se pondrá en contacto
+	con el módulo P2P de los otros agentes SHAD con este fin. El módulo P2P sólo podrá
+	ofrecer los secretos marcados especialmente para ello mediante un atributo especial.  
+\end{itemize}
+
+\begin{figure*}[t!]
+\centering
+\epsfig{file=figuras/sso_dfd1cli.png, width=\textwidth}
+\caption{Diagrama de flujo de datos de nivel  correspondiente a un agente SHAD común.}
+\label{sso_dfdcli}
+\end{figure*}
+
+En la figura \ref{sso_dfd1pri} se
+pueden identificar las siguientes entidades internas dentro del 
+agente principal:
+
+\begin{figure*}[t!]
+\centering
+\epsfig{file=figuras/sso_dfd1pri.png, width=\textwidth}
+\caption{Diagrama de flujo de datos de primer nivel del agente SHAD principal.}
+\label{sso_dfd1pri}
+\end{figure*}
+
+\begin{itemize}
+	\item {\bf Anillo de secretos (RI).} Cumple la misma función que en un agente 
+	SHAD común.
+
+	\item {\bf Módulo de secretos (SM).} Esta entidad cumple las mismas funciones que 
+	en un agente común, pero en el agente principa además obtiene el repositorio
+	de secretos  y lo descifra mediante la información obtenida mediante
+	la única autenticación explícita del usuario. Acto seguido, almacena su contenido en el 
+	{\bf anillo de secretos}.
+
+	\item {\bf Módulo proveedor (PM).} Esta entidad es la encargada de suministrar
+	secretos a los agentes SHAD comunes, dependiendo de los atributos ligados
+	a estos, la información de localización que obtiene del espacio inteligente, y 
+	la confirmación del usuario en los casos que sea necesario.
+	
+	\item {\bf Módulo de descubrimiento (DM).}  Cumple la misma función que en un agente 
+	SHAD común.
+
+	\item {\bf Módulo de anuncios (AM).} Es la entidad encargada de responder a los
+	descubrimientos de los agentes del usuario que arrancan, y de establecer la 
+	sesión con ellos.
+\end{itemize}  
+
+Varios de los flujos de datos mostrados en los diagramas de flujo se realizan entre entidades internas
+de distintos agentes: 
+
+\begin{itemize}
+	\item Descubrimiento del agente principal y establecimiento de sesión  por 
+	parte del {\bf módulo de descubrimiento}, 
+	que es procesado por el {\bf módulo de anuncios} del agente principal.
+
+	\item Petición de un secreto por parte del {\bf módulo recolector} de un agente común 
+	al {\bf módulo proveedor} del agente principal.
+
+	\item Petición de un secreto por parte del {\bf módulo Peer to Peer} de un agente común 
+	al {\bf módulo Peer to Peer} de los agentes comunes disponibles.
+\end{itemize}
+
+Esos flujos de datos se deben implementar en un protocolo seguro, debido a que son flujos entre 
+distintos dispositivos interconectados mediante una red insegura en la que puede haber terceros 
+escuchando, replicando o inyectando mensajes,  y donde la propia red  puede  perder  o duplicar 
+mensajes. 
+
+En la siguiente sección se describirá  en profundidad  el protocolo diseñado para la transmisión 
+segura de los secretos entre el agente 
+servidor y los agentes clientes. 
+
+\section{Protocolo}
+
+\subsection{Claves}
+
+El protocolo entre agentes SHAD se compone de varios tipos de mensajes, que a la 
+vez se apoyan en tres claves privadas:
+
+\begin{itemize}
+
+	\item \textbf{Clave dispositivo: } Cada dispositivo debe tener asignado un 
+	secreto que usará para autenticarse ante su
+	agente principal. Ese secreto tiene que ser conocido por el agente 
+	principal del usuario para que se pueda establecer un
+	canal seguro entre ambos. 
+	Para un terminal $Z$, la clave secreta de ese terminal será 
+	representada como $KT_{z}$.
+	
+	\item \textbf{Clave de sesión: } Es la clave que proporciona un canal seguro entre
+	un agente común y su agente principal. Esta clave
+	se genera aleatoriamente y se usa solo para una sesión. La clave
+	la genera el agente principal de forma aleatoria, y se representa
+	como $KS_{t^a}$ para un terminal $T^a$.
+
+	\item \textbf{Clave de encarnación: } Junto con la clave de sesión, el agente
+	principal proporciona una clave de encarnación a todos los agentes que
+	inician una sesión con él. Esta es común para todos los agentes que inician
+	su sesión con la misma encarnación del agente principal, y se utiliza para 
+	proporcionar seguridad al protocolo Peer to Peer realizado por el módulo
+	MP2P.
+	La encarnación del agente principal se define mediante el identificador de
+	encarnación, que se representa como $E_{id}$, y su clave se representa como 
+	$KE_{id}$.
+	Cuando el agente
+	principal reinicia o decide cambiar de encarnación,  genera otra clave de este tipo.
+	Los agentes que arranquen
+	desde ese momento obtendrán la nueva clave de encarnación. Los agentes que
+	arrancaron en una encarnación anterior no podrán pedir servicio a la nueva encarnación.
+	Un agente tampoco podrá usar su módulo MP2P con agentes de una encarnación 
+	diferente a la suya. 
+
+\end{itemize}
+
+Para el diseño del protocolo, se usará el algoritmo de cifrado de clave simétrica AES~\cite{AES},
+que es el algoritmo estándar de este tipo en la actualidad. Dicho algoritno se utilizará en modo
+CBC. A su vez, se usará el algoritmo  SHA-1~\cite{SHA-1} para realizar los resúmenes. 
+
+\subsubsection{ Terminología }
+\begin{itemize}
+	\item El identificador del usuario $A$ se representa
+	 como $username_a$.
+
+	\item El agente principal de un usuario $A$ se representa
+	 como $P^a$.
+
+	\item Un agente cliente de un usuario $A$ se representa como $T^a$.
+
+	\item Como ya se ha comentado con anterioridad, el algoritmo AES se usa
+	en modo CBC, por lo que se necesitará utilizar
+	un vector de inicialización. 
+	Este vector de inicialización se representa  como $IV$, y se genera de forma
+	aleatoria para cada mensaje enviado.
+
+	\item Supongamos los datos $D$, \{$D$\}$_{K_s}$ representa  los datos 
+	$D$ cifrados con el algoritmo AES usando  $K_s$ como clave. 
+
+	\item Supongamos los datos $D$, \{$D$\}$_{SHA1}$ representa
+	el resumen SHA-1 de los datos $D$.
+
+	\item En todos los mensajes del protocolo se insertan datos 
+	generados aleatoriamente para evitar ciertos ataques
+	relacionados con el vector de inicialización para el modo CBC de AES. Esos datos 
+	tendrán la longitud de un bloque
+	AES y se representan como $random_b$.
+
+	\item En el protocolo se usan números aleatorios que se incrementan
+	en las respuestas, con el fin de verificar que la
+	respuesta se corresponde con el mensaje enviado.
+	Esos números, comúnmente denominados {\it nonces}, son
+	números enteros sin signo de 32 bits de longitud. Se 
+	representan como $n_1$, $n_2$.. $n_n$. 
+
+	\item Con el fin de evitar ataques de replicación de mensajes, los agentes 
+	insertan marcas de tiempo en los mensajes. Esas
+	marcas de tiempo se representan como $timestamp_{t^a}$ para 
+	una máquina $T^a$ .
+\end{itemize}
+
+
+
+\subsubsection{ Descarte de mensajes }
+
+Los mensajes se descartarán y el protocolo no prosperará siempre que:
+
+\begin{itemize}
+
+	\item El número aleatorio ({\em nonce}) que se ha devuelto
+	no coincide con el valor del {\em nonce} que se envió incrementado.
+
+	\item El {\em nonce} que se recibe se encuentra en la lista (o cache)
+	de {\em nonces} usados recientemente. 
+	Esa  cache  es  lo suficientemente grande
+	\footnote{ El número máximo de {\it nonces} en la cache se ha 
+	fijado en 2048, un número muy 
+	superior al que se llegaría a alcanzar en condiciones extraordinarias 
+	de uso. Ese valor ha sido por la experiencia y es
+	un número razonable teniendo en cuenta la memoria que puede estar 
+	disponible en el dispositivo, incluso si es un 
+	dispositivo móvil.} 
+	como para albergar los números aleatorios usados en un intervalo
+	 de tiempo $\Delta$. 
+	Si en algún momento la cache de 
+	{\it nonces} llega a su límite, se entenderá que se está sufriendo 
+	un ataque de denegación de servicio mediante inundación y 
+	se abortará la ejecución del agente, informando antes al usuario de 
+	esta situación 
+	\footnote{ Nótese que para que un {\it nonce} llegue
+	a entrar en cache, antes se ha tenido que verificar que el mensaje 
+	se ha creado con la clave necesaria (clave de terminal,  clave de sesión,
+	o clave de encarnación, dependiendo del tipo de mensaje). Por lo tanto, 
+	un ataque de estas
+	características tan sólo puede llevarse a cabo generando mensajes 
+	maliciosos pero correctos (y eso implica el conocimiento de la
+	clave utilizada para ese tipo de mensaje).}.
+
+	\item La marca de tiempo insertada en el mensaje se considere 
+	desfasada. Siendo $time$ el reloj local, $timestamp$ estará
+	desfasada sssi 
+	\begin{displaymath} 
+		 |time - timestamp| \geq \Delta
+	\end{displaymath}
+
+	Por esa razón, los relojes de los dispositivos del entorno tienen que estar 
+	relativamente sincronizados
+	\footnote{ La experiencia de uso 
+	nos muestra que un valor de 1800 segundos para $\Delta$ es razonable,  
+	ya que el margen de sincronización de 
+	relojes para los distintos dispositivos usados es bastante amplio 
+	(pueden estar desfasados un total de 30 minutos)
+	y la cache de {\it nonces} es lo suficientemente grande como para no 
+	llenarse en ese tiempo incluso en situaciones
+	de uso extremo.}.
+
+	\item Los datos esperados en ciertas partes del mensaje no sean correctos.  
+	Por ejemplo, si la cadena de caracteres que identifica
+	el tipo de mensaje no corresponde a ninguna de los tipos conocidos, 
+	se descarta el mensaje.
+
+	\item Las firmas que se envían junto al mensaje no sean correctas. Una firma 
+	no es correcta si el receptor no puede crear una 
+	firma similar usando los mismos algoritmos, los mismos datos y la misma clave.
+\end{itemize}
+
+
+
+\subsection{ Protocolo de descubrimiento del agente principal}
+
+Supongamos que el usuario A posee un dispositivo que actúa como 
+agente principal ($P^a$), y 
+arranca un terminal $T^a$ que le pertenece. 
+
+En este caso sólo se utilizan dos tipos de mensajes. Los mensajes se identifican 
+mediante un identificador en forma de cadena de caracteres:
+
+\begin{itemize}
+
+	\item \textbf{``ineedmainagent" (INMA)}: mensaje de descubrimiento 
+	del agente principal del usuario. Cuando un terminal arranca, debe 
+	localizar a su agente principal. 
+	Si pasa un tiempo determinado y no obtiene respuesta, el agente 
+	considerará que no existe un agente principal e intentará adoptar 
+	este papel él mismo.
+	El agente podrá llegar a ser agente principal si 
+	y sólo si se cumplen las condiciones explicadas en la 
+	sección \ref{sso_cond}.
+
+	\item \textbf{``iammainagent" (IAMA)}: mensaje con la respuesta 
+	al descubrimiento. En este mensaje
+	se adjunta una clave de sesión $KS_{t^{a}}$ que se utiliza de 
+	aquí en adelante por $T^a$ para solicitar
+	servicio a $P^a$.  También se proporciona el identificador de la 
+	encarnación del agente principal  $E_{id}$ y la clave de 
+	encarnación $KE_{eid}$, que se usa para el protocolo de compartición
+	de secretos entre agentes comunes.
+	
+	El mensaje se compone de dos partes: (i) una parte en la que se
+	se incluye la dirección del agente principal que se ofrece a dar servicio
+	al agente que envió el mensaje INMA, y (ii) otra parte que contiene
+	la clave de sesión que se va a utilizar para establecer contacto con
+	el agente principal, el identificador de encarnación y la clave de 
+	encarnación.
+	
+	La  descomposición del mensaje en dos partes se debe a razones 
+	de diseño; se desacopla la asignación de agente principal del servicio
+	que procesa el mensaje INAM. De esta forma el protocolo puede 
+	seguir siendo válido
+	en una arquitectura formada por diferentes agentes principales (este
+	tipo de arquitectura se tratará más adelante).
+\end{itemize}
+
+
+Para envíar estos mensajes, $T^a$ tiene que tener asignada 
+una clave $KT_{t^{a}}$, y $P^a$ debe conocerla. Esa 
+clave se debe almacernar en el repositorio de claves que 
+obtiene el agente principal al arrancar.
+El protocolo es el siguiente:
+
+\begin{quote}
+	$T^a \longrightarrow  BROADCAST$\\
+	$``ineedmainagent",  username_a, T^a$\\  
+	$IV$, \{$random_b, ``ineedmainagent", username_a, T^a, n_1, n_2, timestamp_{t^{a}}$\}$_{KT_{t^{a}}}$\\
+	\{\{$``ineedmainagent", username_a, T^a, n_1, n_2, timestamp_{t^a}$\}$_{SHA1}$\}$_{KT_{t^{a}}}$\\
+
+	$P^{a} \longrightarrow  T^a $\\
+	$``iammainagent"$\\
+	$IV'$, \{$random_b',``iammainagent", username_a, T^a, address, n_1+1, timestamp_{p^{a}}$\}$_{KS_{t^{a}}}$\\ 
+	\{\{$``iammainagent", username_a, T^a, address, n_1+1,  timestamp_{p^{a}}$\}$_{SHA1}$\}$_{KS_{t^{a}}}$\\
+	$IV''$, \{$random_b'', ``fromowner", username_a, T^a, n_2+1, timestamp_{P^{a}},KS_{t^{a}}, E_{id}, KE_{eid}$\}$_{KT_{t^{a}}}$\\
+	\{\{$``fromowner", username_a, T^a, n_2+1timestamp_{p^a}, KS_{t^{a}, E_{id}, KE_{eid}}$ \}$_{SHA1}$\}$_{KT_{t^{a}}}$\\
+\end{quote}
+
+
+\subsection{ Protocolo de servicio de secretos }
+
+Este protocolo está formado por dos  mensajes:
+
+\begin{itemize}
+	\item \textbf{``tomainagent" (TMA)}: mensaje de petición de 
+	un secreto al agente principal.  
+	
+	\item \textbf{``frommainagent" (FMA)}: mensaje con la 
+	respuesta a la petición.  
+\end{itemize}
+
+
+Al agente principal se le envía un comando, representado como $cmd$. 
+Ese comando puede ser:
+
+\begin{itemize}
+	\item  \textbf{listkeys}: pide al agente principal que le envíe 
+	la lista de secretos que tiene en su anillo. En la lista
+	se envía la descripción de los secretos que tiene el agente
+	principal, pero nunca la información secreta (claves y 
+	contraseñas).
+
+	\item \textbf{haskey tupla}: pregunta al agente si posee el 
+	secreto representado por esa tupla.
+	Los secretos se representan mediante tuplas de atributos de 
+	una manera similar al Factotum original.
+	  
+	\item \textbf{givekey tupla}: le dice al agente que le devuelva 
+	el secreto correspondiente a esa tupla.
+	Si el agente no posee ese secreto, le devolverá un 
+	mensaje de error.  
+\end{itemize}
+
+En el mensaje ``frommainagent" se devuelve una respuesta al comando, 
+que representamos como $cmdresponse$. 
+Esa respuesta puede ser la tupla solicitada o un 
+mensaje de error.
+
+
+\begin{quote}
+	
+	$T^a \longrightarrow  PCM^a$\\
+	$``tomainagent", username_a, T^a$\\  
+	$IV$, \{$random_b, ``tomainagent", username_a, T^a, n_4, timestamp_{t^a}, cmd$\}$_{KS_{t^{a}}}$\\
+	\{\{$``tomainagent", username_a, T^a, n_4, timestamp_{t^a}, cmd$\}$_{SHA1}$\}$_{KS_{t^{a}}}$\\
+
+	$PCM^{a} \longrightarrow  T^a $\\
+	$``frommainagent", username_s$\\
+	$IV'$, \{$random_b',``frommainagent", username_a, T^a, n_4+1, timestamp_{p^a}, cmdresponse$\}$_{KS_{t^{a}}}$\\ 
+	\{\{$``frommainagent", username_a, T^a, n_4+1, timestamp_{p^a}, cmdresponse$\}$_{SHA1}$\}$_{KS_{t^{a}}}$\\
+
+\end{quote}
+
+
+\subsection{Protocolo Peer to Peer}
+
+
+El  protocolo está formado por dos  mensajes:
+
+\begin{itemize}
+	\item \textbf{``topeers" (TPE)}: mensaje de petición de 
+	un secreto a los  agentes comunes. 
+	
+	\item \textbf{``frompeer" (FPE)}: mensaje con la 
+	respuesta a la petición.  
+\end{itemize}
+
+
+
+\begin{quote}
+	$T^a$ y $Z^a$ son terminales de A.
+
+	$T^{a} \longrightarrow  BROADCAST$\\
+	$``topeers", username_a, E_{id}$\\  
+	$IV$, \{$random_b, ``topeers", username_a, E_{id}, n_5, timestamp_t, tuple$\}$_{KE_{eid}}$\\
+	\{\{$``topeers", username_a, E_{id}, n_5, timestamp, tuple$\}$_{SHA1}$\}$_{KE_{eid}}$\\
+
+	$Z^{a} \longrightarrow  T^a $\\
+	$``frompeer", E_{id}$\\
+	$IV'$, \{$random_b',``frompeer", username_a,  E_{id},  n_5+1, timestamp_z, tuple$\}$_{KE_{eid}}$\\ 
+	\{\{$``frompeer", username_a,  E_{id},  n_5+1, timestamp, tuple$\}$_{SHA1}$\}$_{KE_{eid}}$\\
+
+\end{quote}
+
+
+
+\section{Implementación de prototipo: NetFactotum}
+
+En esta sección se comentarán detalles de una implementación 
+del agente SHAD  para  el sistema
+operativo Plan B~\cite{3eov,3e}.  
+
+Este prototipo se basa en Factotum~\cite{cox02security}, el agente
+de seguridad del sistema operativo Plan 9.  En el capítulo \ref{facto} 
+del capítulo dedicado al estado de la cuestión se describe el funcionamiento
+y el esquema que sigue Factotum.
+
+La arquitectura de la implementación del prototipo de SHAD se 
+presenta en la figura \ref{sso_proto}. 
+
+En concreto, Factotum conforma practicamente la totalidad del
+ módulo de secretos de 
+un agente SHAD. De ahora en adelante, nos referiremos al prototipo
+del agente SHAD como {\bf Netfactotum}. 
+
+El resto del prototipo lo forman los siguientes componentes:
+
+\begin{itemize}
+
+	\item Servidor {\it unicast}. Sólo está activo en el agente
+	principal y posee flujo de ejecución propio.
+	Se encarga de servir los secretos a los agentes principales
+	procesando las peticiones que recibe en un puerto TCP bien
+	conocido (tcp!unicast!10023)
+	\footnote{Se utiliza una notación similar a la utilizada en el 
+	sistema operativo Plan 9: {\it protocolo!dirección!puerto}}.
+
+	\item Servidor {\it broadcast}. Está activo tanto en agentes
+	comunes como en el agente principal. El servidor posee
+	flujo de ejecución propio y escucha en un puerto UDP bien
+	conocido de la dirección de broadcast de la subred 
+	En el agente principal, se encarga
+	de procesar los mensajes de descubrimiento de los agentes
+	comunes (udp!broadcast!10023). 
+	En los agentes comunes, se encarga de procesar
+	las peticiones Peer To Peer (udp!broadcast!10024). 
+
+	\item Módulo recolector (RM). Se encarga de intentar obtener
+	las claves de los otros agentes. Se pone en contacto con
+	los servidores descritos anteriormente a través de conexiones
+	TCP (agente principal) o radiando datagramas UDP en la 
+	dirección de broadcast (agentes comunes).
+
+	\item Módulo descubridor (DM). Su función es descubrir al
+	agente principal radiando mensajes de broadcast en un puerto
+	(udp!broadcast!10023). 
+\end{itemize}
+
+Los distintos flujos de ejecución deben acceder concurrentemente a
+la estructura de datos que alberga las tuplas de Factotum (el anillo
+de secretos). Para coordinar el acceso concurrente se han utilizado
+cierres con espera activa ({\it spin locks}), debido a que la espera
+que deben realizar es corta. Por otra parte, la probabilidad de encontrar
+el cierre echado en el anillo es baja, debido a la naturaleza del propio
+agente y el tipo de uso para el que está diseñado.
+
+\begin{figure*}[t!]
+\centering
+\epsfig{file=figuras/sso_proto.png, width=\textwidth}
+\caption{Esquema del prototipo de agente SHAD para SSO (NetFactotum)}
+\label{sso_proto}
+\end{figure*}
+
+La implementación aprovecha los servicios que ofrece en espacio
+inteligente del Laboratorio de Sistemas~\cite{lssmartspace}, en concreto
+la infrastructura de localización y la de mensajes de voz. 
+Aunque el 
+prototipo haga uso de estos servicios, no depende de ellos para su
+funcionamiento, esto es, tolera el fallo o la ausencia de 
+dichos servicios.
+
+\subsection{Representación de las claves}
+
+NetFactotum utiliza el mismo método para almacenar las claves 
+que Factotum.  Las claves se almacenan en tuplas, que además
+contienen atributos que aportan información sobre la clave.  
+Las claves de Factotum tienen un atributo común,  \texttt{proto}, que 
+especifica el tipo de secreto.
+Los otros  atributos  varían según el tipo de clave (el servicio para
+el que sirve el secreto, o campo de una tupla)~\cite{factotum-man}). 
+
+Los atributos secretos de una tupla van precedidos por el carácter '!'. 
+Estos atributos secretos nunca se presentan en claro por pantalla. 
+Factotum almacena las tuplas en su memoria principal. La memoria
+principal de Factotum está protegida contra depuración y nunca se
+vuelca a área de intercambio. 
+
+\subsubsection{ Claves para el protocolo SHAD }
+
+Para almacenar los secretos relacionados con el protocolo de 
+NetFactotum, se ha creado un nuevo tipo de tupla que
+se  identifica mediante el campo  \texttt{proto=shad}. 
+
+Estas tuplas almacenan las claves privadas de las máquinas que
+pertenecen al usuario ($KT_z$ para un terminal $Z$):
+
+\begin{center} 
+	\texttt{ proto=shad 
+	type=term 
+	machine={\it máquinaZ}  
+	!tsecret=}$KT_z$
+	%%forrent=[yes|no] askforpermission=[opción]
+\end{center}
+	
+
+\subsubsection{ Campos para claves convencionales }
+\label{restric}
+
+Se han añadido varios atributos a las tuplas convencionales de Factotum.
+Mediante el uso del estos atributos, el usuario es capaz de 
+ajustar el nivel de seguridad para sus secretos.
+Ell usuario deberá aceptar el compromiso entre comodidad 
+de uso y nivel de seguridad de sus secretos. Por tanto, el usuario 
+tendrá que tener
+en cuenta que los secretos que no están disponibles desde ciertos 
+terminales tendrán que proporcionarse explícitamente, con la obstrucción 
+que conlleva.
+A la vez tendrá que asumir que los secretos que están disponibles desde 
+terminales 
+vulnerables a ataques estarán menos seguros que los no accesibles. 
+
+Respecto a las restricciones, SHAD aplica siempre la más restrictiva. En el 
+caso de los atributos que utilizan información de localización, si dicha información
+no está disponible, el agente principal no sirve el secreto. 
+
+
+Supongamos la siguiente tupla que contiene un  secreto para el protocolo SSH:
+
+	\begin{center} 
+		\texttt{ proto=pass 
+		server=s1 
+		service=ssh 
+		user={\it usuario}
+		machine={\it máquina}  
+		[noremoteaccess] 
+		[nopeeraccess] 
+		[needconfirm]
+		[samelocation] 
+		[userlocation={\it localización}] 
+		[clientlocation={\it localización}]
+		[accesiblefrom={\it opción}] 
+		!password }
+	\end{center}
+
+\begin{itemize}
+	\item \texttt{noremoteaccess}: indica que ningún agente 
+	puede compartir ese secreto con otro agente. Si una tupla
+	no contiene este atributo, el agente principal considera
+	que puede enviarla a un agente común.
+
+	\item \texttt{nopeeraccess}: indica que el secreto no
+	puede compartirse entre agentes comunes a través del
+	protocolo Peer to Peer. El agente principal sí puede enviar
+	el secreto a los agentes que lo requieran.
+
+	\item \texttt{needconfirm}: obliga a que la acción tenga
+	que confirmarse explícitamente por el usuario en el agente
+	principal. 
+
+	\item \texttt{userlocation={\it localización}}:  el secreto se sirve
+	sólo si el usuario se encuetra en la localización especificada
+	en el atributo. En caso de que la tupla contenga también
+	el atributo \texttt{needconfirm}, se pedirá confirmación 
+	sólo si el usuario se encuentra en esa ubicación. En caso contrario,
+	se denegará el acceso al secreto.
+	Puede haber más de una instancia de este
+	atributo dentro de una tupla para especificar varias 
+	localizaciones desde donde el secreto está disponible.
+
+	\item  \texttt{clientlocation={\it localización}}: funciona igual
+	que el atributo anterior pero comprobando la localización de
+	la máquina cliente. Puede haber más de una instancia de este
+	atributo en una tupla.
+
+	\item \texttt{samelocation}: es accesible si la
+	localización física del usuario y de la máquina 
+	cliente es la misma. Respecto a las confirmaciones, se aplica
+	el mismo criterio que en los dos atributos anteriores.
+
+	\item \texttt{accesiblefrom={\it máquina}}: el 
+	secreto sólo es accesible desde las máquina indicada en
+	el atributo. Puede haber más de una instancia de este
+	atributo en una tupla.
+\end{itemize}
+	
+\subsection{Control de los agentes}
+
+Factotum ofrece una interfaz de control a través de un sistema de ficheros. 
+El prototipo de SHAD posee la misma interfaz, pero con dos  ficheros de
+control adicionales.
+
+El fichero \texttt{getkey} fichero proporciona una interfaz 
+para ordenar a un
+agente común que adquiera un secreto. El fichero de control admite
+una cadena de caracteres con formato de tupla de Factotum, sin
+el atributo secreto especificado. . 
+Si la cadena escrita en el fichero tiene una sintaxis correcta, entonces
+el agente intenta conseguir la tupla completa del agente principal o
+de los otros agentes comunes de su misma encarnación. Si el agente
+consigue obtener la tupla completa, la almacena en el anillo de secretos.
+El fichreo \texttt{getkey} no está disponible en el agente principal.
+
+El fichero  \texttt{hold}  hace que los hilos servidores del agente no
+acepten peticiones, y por tanto, el agente SHAD actúe como un agente
+Factotum convencional.
+
+\subsection{ Repositorio de claves }
+
+En el prototipo NetFactotum, el repositorio de claves se obtiene 
+mediante Secstore\cite{secstore-man}, de la misma forma que lo 
+hace Factotum.  Cuando un agente 
+NetFactotum arranca
+y asume el papel de agente principal , adquiere su almacén de 
+claves de un servidor de autenticación a través de la red. La principal 
+diferencia con Factotum 
+radica en que sólo el primer agente en arrancar necesita obtener 
+el Secstore. Por tanto, sólo se depende de una entidad centralizada
+(el servidor de Secstore) en el momento de arrancar el agente principal.
+
+Para eliminar esa dependencia, se 
+podría obtener el almacén de claves de un dispositivo local, por ejemplo 
+de una tarjeta de memoria SD Card. La tarjeta tendría el mismo fichero
+de Secstore, crifrado con un algoritmo fuerte de clave simétrica.
+
+
+\subsection{Confirmaciones: Oshad}
+
+El usuario necesita una interfaz para recibir avisos de su agente principal
+y poder consentir la cesión de un secreto cuando sea necesario. Para ello
+se ha desarrollado un programa, Oshad, que ofrece una interfaz gráfica a través 
+del sistema gráfico de Plan B,  Omero~\cite{omero}.  
+
+Oshad ofrece una interfaz sencilla para que el usuario pueda confirmar las
+operaciones tan sólo pulsando un botón. A la vez, Oshad ofrece una interfaz
+para su control desde NetFactotum que se basa en un pequeño sistema de 
+ficheros virtual, siguiendo con las lineas generales de diseño de Plan B. 
+
+El sistema de ficheros de Oshad  ofrece tres  ficheros de control:  \texttt{confirm},
+\texttt{ads}, y \texttt{voice}. 
+
+\texttt{Confirm} es el fichero de control en el que se indican las operaciones 
+que el usuario debe confirmar. 
+Este fichero de control espera 
+una cadena de caracteres con el siguiente formato:
+
+	\begin{center} 
+		\texttt{
+		``nonce
+		cliente
+		protocolo
+		servidor''
+		}
+	\end{center}
+
+\texttt{Nonce} es un entero sin signo de 32 bits generado de forma aleatoria
+que identifica la petición de confirmación que se le pasa a Oshad. \texttt{Cliente}
+es el nombre de la máquina donde ejecuta el agente que está pidiendo 
+servicio al principal. \texttt{Protocolo} especifica el tipo de secreto que
+solicita el agente remoto. Por último, \texttt{servidor} es el nombre de la 
+máquina que ofrece el servicio para el que se va a usar el secreto reclamado.
+
+Cuando se escribe una cadena con esta sintaxis en el fichero \texttt{confirm},
+Oshad pregunta al usuario a través de su interfaz gráfica integrada en Omero. 
+En la figura \ref{oshad} se muestra una captura de pantalla de Oshad pidiendo
+confirmación para ceder un secreto a un agente SHAD que lo solicita. Cuando el
+usuario se pronuncia al respecto, su decisión se puede leer del mismo fichero: la lectura
+del fichero de control devuelve el \texttt{nonce} junto con la decisión del usuario.
+
+\begin{figure*}[t!]
+\centering
+\epsfig{file=figuras/oshad.png, width=\textwidth}
+\caption{Captura de pantalla de Oshad pidiendo confirmación para ceder al agente 
+SHAD de la máquina 'osiris' la 
+contraseña de acceso al servidor SSH de la máquina 'ronin' .}
+\label{oshad}
+\end{figure*}
+
+Por tanto,  cuando una aplicación (que comúnmente será NetFactotum, aunque 
+otras aplicaciones pueden usar Oshad de la misma manera, ya que están totalmente
+desacoplados) necesita confirmación, sigue los pasos enumerados a continuación:
+
+\begin{enumerate}
+	\item Abre el fichero \texttt{confirm} en modo lectura/escritura.
+	\item Escribe en el fichero \texttt{confirm} la cadena de control.
+	\item Lee del fichero \texttt{confirm} en repetidas ocasiones
+	 la confirmación o cancelación de la
+	operación, identificando en contenido mediante el \texttt{nonce}
+	utilizado en la cadena de control. Cada aplicación definirá su tiempo
+	de espera máximo (timeout) para considerar que la 
+	confirmación ha fallado.
+\end{enumerate}
+
+El fichero \texttt{ads} espera cadenas de caracteres correspondientes a  avisos 
+destinados al usuario. Estos avisos se imprimen en la interfaz gráfica de Oshad. Por
+otra parte, Oshad saca partido de la infrastructura de voz de 
+Plan B~\cite{lssmartspace}, avisando a través de esta al usuario. Cuando un 
+programa escribe un aviso en el fichero \texttt{ads}, Oshad lo reenvía a la infrastructura
+de voz del entorno inteligente. La infrastructura de voz de Plan B redirige el mensaje 
+a la localización actual del usuario, donde un sintetizador de voz lo reproduce por un
+altavoz. Oshad  es capaz de usar la infrastructura de voz si esta está disponible, pero 
+no depende de ella  para su funcionamiento: el usuario puede seguir confirmando operaciones
+y recibiendo mensajes a través de la interfaz  aunque no esté disponible ninguna infrastructura
+del entorno inteligente (localización o voz).
+
+Por último, Oshad ofrece un fichero \texttt{voice} que sirve para indicar si el usuario
+desea utilizar la infrastructura de voz del espacio inteligente o no. El fichero   
+admite sólo dos cadenas de control, \texttt{on} y \texttt{off}, que activan y desactivan
+el servicio de voz respectivamente.
+
+
+\subsection{Información de localización}
+
+Mediante el uso de información de localización y de las restricciones descritas en 
+la sección \ref{restric}, el agente principal de 
+SHAD es capaz de 
+ceder secretos a los demás agentes en base al contexto físico de las personas y máquinas.
+
+El prototipo implementado  accede a la información de localización  que 
+ofrece el espacio inteligente
+del Laboratorio de Sistemas mediante dos servicios:  \texttt{/who} ofrece información
+de contexto sobre personas y  \texttt{/what} ofrece información de localización sobre
+objetos. Estos servicios se describen en profundidad en otros 
+trabajos~\cite{ballesteros04traditional,lssmartspace}.
+ 
+El servicio \texttt{/who}  ofrece una interfaz de sistema
+de ficheros a través de la cual proporciona información de contexto sobre usuarios.
+El sistema ofrece los siguientes ficheros con información de localización
+para cada usuario del sistema:
+
+\begin{itemize}
+	\item \texttt{status}: muestra si el usuario está presente en el sistema.
+	\item \texttt{where}: ofrece la localización del usuario. 
+\end{itemize}
+
+La infrastructura de localización obtiene dicha información de distintas fuentes, como
+sensores de X10~\cite{x10}, balizas emisoras de  ultrasonidos, programas que 
+implementan heurísticas definidas para usuarios concretos y otros métodos.
+
+Por otra parte, \texttt{/what} ofrece  un sistema de ficheros con un directorio
+para cada uno de las máquinas del entorno ubicuo que contien una serie de ficheros
+con información de contexto. Dentro de ese directorio 
+se sirve un fichero llamado \texttt{where} que indica la localización de dicha máquina.
+
+\subsection{Experiencia de uso}
+

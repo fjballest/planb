@@ -1,0 +1,9 @@
+ksrv is a server for the mouse similar to kbdfs only it is just a sink of events.
+To be compiled it needs libtst-dev and xlibs-dev and p9ports at least.
+The X must suport test extensions.
+It runs standalone unless authentification is required. Then
+it needs the p9ports factotum.
+The translation of keys it does is mainly heuristical and is done for
+a US keyboard map. A reverse lookup is tried to do to fill the isshift field and so.
+It doesnt work when the keysym doesnt exist. For example, ^ should be added as
+asciicircum on some key in order to work with the xmodmap.

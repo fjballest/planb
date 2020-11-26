@@ -1,0 +1,356 @@
+.TH BNS 4
+.SH NAME
+bns \- Plan B name space file server and volume multiplexor
+.SH SYNOPSIS
+.B bns
+[
+.B -dDv
+]
+[
+.B -l
+]
+[
+.B -s
+.I srv
+]
+.SH DESCRIPTION
+.I Bns
+is used in Plan B to implement dynamic namespaces and to start system operation. This
+program is usually used as a replacement for
+.IR init (8).
+See the examples section.
+.PP
+As said in
+.IR planb (1),
+in Plan 9, most resources are provided by file servers. In Plan B, a resource
+is provided by a volume, which is a 9P file server that has a (global) name and
+attributes. Volumes imported to user name spaces through
+.I bns
+may be replaced at run
+time by
+.I bns
+without breaking the name space or blocking the client for too long while the
+network stack takes its time to declare the 9P connection broken.
+.PP
+.I Bns
+is a file server that provides Plan B file volumes implemented by Plan 9  file servers.
+It sits between clients and file servers and determines which file servers
+are to be used to provide each volume,
+depending on their availability and the client requirements for the volumes
+mounted.
+.PP
+Initially,
+.I bns
+mounts itself in the name space of the caller, using the namespace described in
+.B /lib/namespace.planb
+that uses volumes to build the name space
+instead of direct attachments to particular file servers. This permits file-server
+switching and recovering. As an aid,
+.I bns
+automatically discovers volumes that correspond to
+.B /
+and to
+.B /usr
+as specified in the
+.IR plan9.ini (8).
+.PP
+A volume is identified by a global name. By convention, the name is the customary path where it
+is mounted. Besides the name, a volume has a
+set of attribute/value pairs. The set of attribute/value
+pairs is also known as the volume properties. Attribute/value pairs specified by the user
+import requests are also known as constraints.
+.PP
+Clients mount volumes by mounting the file
+.B #s/vol
+and using the attach spec to specify which volume name and constraints are required. See
+.IR mount (2).
+Each attach to
+.B bns
+creates a new volume mount point.
+.I Bns
+plugs into such mount point the
+file tree provided by any volume that matches the user supplied spec.
+When the volume file server becomes unavailable (its connection breaks or a request is
+timed out)
+.I bns
+selects an alternate one (also matching the user constrainst)
+and switches to it. When no volume is available,
+an empty directory is provided as the file tree for the mount point.
+Note that volume switching happens only after I/O errors.
+.PP
+Qids for files in a volume are rewritten by
+.I bns
+so that
+.IR bind (2)
+requests to/from a volume file would work as expected, despite file server switching.
+Fids in use by the client are re-created to continue working after the switch.
+.PP
+However, any
+fid open for writing is kept untouched after a volume switch and therefore reports
+I/O errors for any operation after the switch.
+.PP
+The attach specifier used to mount volumes must have this format:
+.IP
+.B "flags name props | props | ...
+.LP
+where
+.I flags
+is an optional flag field, as described later,
+.I name
+is the name for the volume and
+.I props
+is a sequence of
+.B attr=value
+pairs separated by space. If no
+.I props
+are given, any volume with given name matches the request. If
+.I props
+is given, the volume must have the specified attributes with the given values.
+.PP
+More than one set of
+.I props
+may be given, separated by the vertical bar character, to specify preferences.
+In this case, each
+.I props
+set is tried in left-to-right order to find matching volumes.
+Volumes matching
+.I props
+on the left are preferred to those matching
+.I props
+specified on the right.
+.I Bns
+always tries to use a preferred volume (even if a less-preferred one was available
+and was being used). In this case, volume switching may happen also when a
+preferred volume if found.
+.PP
+The optional
+.I flags
+field must start with the
+.B -
+character and must be separated from the volume name by a space. Flag
+.B -U
+is used
+to request a union of volumes, which binds together all volumes matching the
+spec, and not just the first one found.
+Flag
+.B -M
+is used to specify a required (must-have)
+volume, and makes
+all 9P transactions to be kept on hold during periods of time when no
+file server is available for the volume.
+Flag
+.B -T
+requests
+.I bns
+not to timeout
+.IR read ,
+requests made on files (not on directories) in the volume. This option should be
+avoided, but it may be necessary when
+mounting devices where these requests might block for a long time even when
+there is no failure in the device, for example, a mouse or a plumbing port.
+.PP
+A mount of
+.B #s/vol
+with the empty spec attaches to a file tree with a single directory that contains
+a file named
+.BR vol .
+This file tree is attached during the initial Plan B namespace setup at
+.B /dev
+so that
+.B /dev/vol
+may be used to control this program.
+.PP
+Reading this file provides the list of volumes (and mount points) as known by
+the program.
+A write to the file permits to modify this list, as explained below.
+.PP
+Option
+.B -s
+asks
+.I bns
+to post
+.I srv
+into
+.IR srv (3)
+instead of the default.
+.PP
+Volumes are discovered either by means of
+.IR adsrv (8)
+or by writes to
+.B /dev/vol
+using a precise format. In either case,
+.B bns
+receives one text line per known volume. Each line contains the following fields
+separated by white space:
+.TP
+.I addr
+the network address for the 9P file server or the name for a 9P connection file.
+.TP
+.I spec
+the
+.IR mount (2)
+spec for the file tree.
+.TP
+.I path
+the path in the server for the file tree.
+.TP
+.I name
+the name of the volume.
+.TP
+.I cnstr
+the constraint for the volume.
+.PP
+A line starting with
+.B #
+is considered as a comment, and is ignored.
+.PP
+The field
+.I cnstr
+may be omitted, if there are no constraints of interest for the volume.
+Also, a line may omit both the
+.I spec
+and
+.I path
+fields, in which case the spec used is the empty string and the path is
+set to
+.BR / .
+.PP
+If option
+.B -l
+is given, the program polls the discovery service
+for files describing volumes (with the same format shown above). The discovery
+service must run  at
+.B tcp!$fs!11010
+and conform to the protocol of
+.IR adsrv (8).
+.PP
+A write
+to
+.B /dev/vol
+with the format described above announces a new volume.
+A write of a line
+.IP
+.B "del name cnstr
+.DE
+.LP
+disables those volumes matched by
+.I name
+and
+.IR cnstr .
+This last field may be omitted. The special name
+.B *
+matches all the names.
+A line with the same format, but using
+.B add
+instead of
+.BR del ,
+enables a previously disabled volume.
+Constraints for a volume can be changed by a write of
+.IP
+.B "set name oldcnstr newcnstr
+.LP
+this merges
+.I newcnstr
+into the constraints for volumes matching
+.I name
+and
+.IR oldcnstr .
+The merge process adds new attributes and changes values for
+old attributes, but does not remove attributes.
+.PP
+Flags
+.B -dDv
+activate various debug diagnostics, and may make the program very
+verbose (and slow). The flag
+.B -v
+shows volume debug messages. The other two trace 9P messages
+with increasing verbosity.
+.PP
+As a debug aid, a file
+.B volctl
+is posted into
+.IR srv (3)
+to accept commands for debugging. The
+.B V
+command makes
+.I bns
+dump the state of its most important data structures, along with some
+statistics. The
+.B D
+command enables all the debug flags following. Use
+.B Dn
+to disable all debug flags. The
+.B T\fIvol\fP
+command
+activates a debug trace for the named volume. The
+.B N
+command deactivates all traces.
+Other writes to the control
+file are handled as configuration commands.
+.SH EXAMPLES
+Put this in your
+.IR plan9.ini (8)
+to start your terminal using a Plan B name space, as
+determined by
+.B /lib/namespace.planb
+.EX
+
+rootspec=yourfsspecforroot
+usrspec=yourfsspecforusr
+init=/386/bin/bns -l
+.EE
+Your profile should check for the
+.B $planb
+environment variable, if you care.
+.PP
+The following request mounts at
+.B /root
+the volume named
+.BR / .
+The preferred volume is one provided by
+.B $fs
+and available through a network connection with a good latency.
+Should that not be feasible, the next preferred one is
+a volume provided by the local system. If that is not available either, a
+volume from
+.B $fs
+is our last choice. The
+.B -M
+flag instructs
+.I bns
+to hold on when no volume is available given our spec.
+.EX
+
+mount -aC /srv/vol /root '-M / sys='$fs' net=ok|sys='$sysname'|sys='$fs
+.EE
+.PP
+The next command builds a union of all volumes with name
+.B /devs/ui
+that are provided by the user issuing the request:
+.EX
+
+mount -bc /srv/vol /devs '-U /devs/ui user='$user
+.EE
+.PP
+An example configuration file, which might be copied line-per-line to
+.B /dev/vol
+ follows:
+.EX
+tcp!whale!9fs	planb/active	/	/
+tcp!whale!9fs	planb/active	/386/bin	/bin	'arch=386 type=dir'
+tcp!aquamar!hx	/devs/hx	
+/srv/vfossil	main/active	/	/
+/srv/vfossil	main/active	/386/bin		/bin	'arch=386 type=dir'
+.EE
+.SH FILES
+.B /lib/namespace.planb
+for the default name space built at start time on Plan B machines.
+.SH SOURCE
+.B /sys/src/cmd/bns
+.SH SEE ALSO
+.IR planb (1),
+.IR init (8),
+.IR plan9.ini (8),
+.IR mount (2).
+.SH BUGS
+Too young, therefore not so reliable.

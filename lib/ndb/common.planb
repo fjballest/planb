@@ -1,0 +1,11 @@
+tcp=mouse port=11000
+tcp=kbd port=11001
+tcp=plumber port=11002
+tcp=what port=11003
+tcp=audio port=11004
+tcp=voice port=11005
+tcp=omero port=11007
+tcp=hx port=11008
+tcp=ads port=11010
+tcp=x10 port=19000
+udp=vol port=19001

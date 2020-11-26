@@ -1,0 +1,10 @@
+#!/bin/rc
+echo msgs >/dev/label >[2]/dev/null
+test -e /who/$user/msgs || {
+	cp /dev/null /who/$user/msgs
+	chmod a+w /who/$user/msgs
+	chmod +a /who/$user/msgs
+}
+date >/who/$user/msgs
+echo scroll >/dev/wctl >[2]/dev/null
+exec tail -1 -f /who/$user/msgs

@@ -1,0 +1,23 @@
+
+Tools for updating context.
+This is heavily dependent on the local Plan B setup.
+
+env/locate: determines machine location at boot time.
+
+env/getrole: determines machine role
+env/setrole: updates machine context to reflect its role
+env/mkwhat: updates machine context at boot time.
+
+env/update: updates user context each 30secs.
+	to run at the primary room terminal
+
+env/terms: lists user terminals according to /what
+
+env/who: lists users according to /what
+
+env/uam2who: update context for UAM uses from their xml tool.
+env/pc2who: update context for users according to ping
+env/mail2who: update snail mail context for all users
+env/who2uam: generate XML for UAM from our /who/where/what
+env/who2web: generate web page from our /who/where/what
+env/x10outside: switch on/off corridor displays according to x10

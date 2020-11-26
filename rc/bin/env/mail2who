@@ -1,0 +1,17 @@
+#!/bin/rc
+
+rfork e
+test -d /who || { echo mailtowho: no /who >'#c/cons' ; exit who }
+
+mailurl=http://mailweb.lsub.org/
+
+
+while(;){
+	users=`{hget $mailurl | grep '/icons/unknown.gif' | awk -F" '{print $8}'}
+
+	for (u in $users){
+		sts=`{hget $mailurl^$u}
+		echo $sts > /who/$u/letters
+	}
+	sleep 300
+}

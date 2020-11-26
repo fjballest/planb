@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/whale/dist/repl/ainferno.db
+dir=/n/whale/usr/inferno
+excl=(-itmp -iusr -imnt/keys)

@@ -1,0 +1,46 @@
+#!/bin/rc
+
+rfork e
+servers=no
+if (~ $1 -k){
+	terms=`{env/terms}
+	cd /lib/ndb/vol
+	for (t in $terms){
+		addr=`{grep -l '/dev/kbd.*sys='^$t *!*!*|sed 1q}
+		if (! ~ $#addr 0)
+			echo $t^'='^$addr
+	}
+	exit ''
+}
+if (~ $1 -m){
+	terms=`{env/terms}
+	cd /lib/ndb/vol
+	for (t in $terms){
+		addr=`{grep -l '/dev/mouse.*sys='^$t *!*!*|sed 1q}
+		if (! ~ $#addr 0)
+			echo $t^'='^$addr
+	}
+	exit ''
+}
+if (~ $1 -a){
+	servers=yes
+	shift
+}
+if (~ $1 -p){
+	# back compat
+	echo env/terms called with -p flag. remove call. >[1=2]
+	exit ''
+}
+
+hosts=`{grep -l $user /what/*/owner | sed 's|/what/([a-z0-9]*)/owner|\1|' |sort|uniq}
+for (h in $hosts){
+	if (~ $servers yes || ! ~ `{cat /what/$h/role} server){
+		echo -n $h
+		if (~ $1 -r) {
+			echo '	'^`{cat /what/$h/role}
+		}
+		if not
+			echo
+	}
+}
+exit ''

@@ -1,0 +1,78 @@
+.TH OSCREEN 1
+.SH NAME
+oscreen  \- redirects mouse and keyboard to remote screens
+.SH SYNOPSIS
+.B oscreen
+[
+.B -a
+.I name=address
+]
+[
+.I machine ...
+]
+.SH DESCRIPTION
+.PP
+.I Oscreen
+is a
+.IR omero (1)
+user interface for both
+.IR mousefs (4)
+and
+.IR kbdfs (4).
+It permits the user to click on a
+.I machine
+(actually, a display)
+name to redirect both keyboard and mouse to that machine.
+Both devices are reclaimed back for local usage by pressing mouse button
+1 near the up-left corner of the screen.
+.PP
+To perform its job,
+.I oscreen
+writes to the
+.B /dev/mousectl
+file to issue mouse redirection
+requests. The keyboard is redirected as a result of mouse redirection.
+.PP
+The program uses
+.B env/terms
+to determine the list of machines involved and the address for their mouse
+redirector, when no machine name is given
+in the command line.
+.PP
+Events in the interface makes the program
+refresh the list of machines.
+.PP
+The option
+.B -a
+can be used to add additional screen names to the interface. The argument
+contains a screen name, an equal character, and the network address where
+to reach
+.I mousefs
+for that screen. The program assumes that
+.I kbdfs
+can be reached at the same address but using the next port in numeric order.
+.SH EXAMPLE
+.PP
+.B /rc/bin/brc
+runs this to support user I/O redirection:
+.EX
+	kbdfs   -V /dev/kbd
+	mousefs    -V /dev/mouse
+.EE
+.LP
+Later, the user runs this within a omero session:
+.EX
+	oscreen
+.EE
+.LP
+Now the user can click on a machine name to command its window system,
+and click at the top-left corner to reclaim the input devices back to the
+local system.
+.PP
+.SH SOURCE
+.B /sys/src/cmd/oscreen.c
+.SH "SEE ALSO"
+.IR mousefs (4),
+.IR env (8),
+and
+.IR mouse (3).

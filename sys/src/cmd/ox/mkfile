@@ -1,0 +1,19 @@
+</$objtype/mkfile
+
+#BIN=$home/bin/$objtype
+BIN=/$objtype/bin
+TARG=ox
+
+
+OFILES=\
+	ox.$O\
+	cmd.$O\
+	plumb.$O\
+	edit.$O\
+	tagcmds.$O\
+
+
+HFILES=ox.h
+
+</sys/src/cmd/mkone
+

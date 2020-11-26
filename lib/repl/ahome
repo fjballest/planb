@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/whale^$home/lib/repl/ahome.db
+dir=/n/whale^$home
+excl=(-itmp -ilib/repl -ilib/replica -ilib/snarf)

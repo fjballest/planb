@@ -1,0 +1,61 @@
+.TH OPLAYER 1
+.SH NAME
+oplayer \- Omero music player for mp3 audio files
+.SH SYNOPSIS
+.B oplayer
+[
+.B -d
+]
+[
+.I dir
+]
+.SH DESCRIPTION
+.I Oplayer
+is a program that provides a
+.IR omero (1)
+interface
+to play audio files.
+.I Oplayer
+uses the MP3
+audio volume
+to play songs, by copying them to
+.B /devs/audio/output
+and using
+.B /devs/audio/volume
+and to adjust the
+volume level.
+.PP
+The
+.I dir
+argument identifies the directory containing the songs and/or other
+directories. The program understands the commands
+.BR Play ,
+.BR Stop ,
+.BR Pause ,
+.BR Resume ,
+and
+.BR Next ,
+which are self-explanatory.
+.PP
+The mouse can be used as said in
+.IR omero (1)
+to look for other directories to play, or to look for a different song to play.
+The program considers
+.I look
+and
+.I exec
+requests as synonims: Requests to play.
+.PP
+Option
+.B -d
+enables diagnostic messages for debugging.
+.PP
+.I Oplayer
+listens to the
+.B song
+.IR youps (4)
+port, to accept requests for songs or albumns to be played.
+.SH SOURCE
+.B /sys/src/cmd/oplayer.c
+.SH "SEE ALSO"
+.IR omero (1)

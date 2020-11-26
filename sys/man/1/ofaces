@@ -1,0 +1,87 @@
+.TH OFACES 1
+.SH NAME
+ofaces \-  show faces for mails in omero
+.SH SYNOPSIS
+.B ofaces
+[
+.B -d
+] [
+.B -l
+.I label
+]
+[
+.B -n
+limit
+]
+[
+.B -i
+.I infmt
+]
+[
+.B -o
+outfmt
+]
+[
+.I cmd
+]
+.SH DESCRIPTION
+The
+.I ofaces
+command displays in
+.IR omero (1)
+a representation of users related to a set of files,
+using a small image for each user. Usually, each (user face related
+to a) file shown
+corresponds to a mail message, but it may also correspond
+to who is present in the environment or to something else (depending
+on the given arguments).
+The image is typically a portrait of the user. Which image to 
+display is determined by two directories /usr/$user/lib/face 
+and /lib/face. Entries in /usr/$user/lib/face take priority over 
+those in /lib/face. See 
+.IR face (6),
+for how these directories are organised.
+.PP
+The argument
+.I cmd
+is executed by
+.I ofaces
+to determine which file names must be shown and which user is to be shown
+for each file. This program is expected to print one line per file with the absolute
+file path, and equal sign, and the mail address for the user to be shown. By default,
+.B "Mails -l
+is used, which shows the list of mails in the Plan B mailbox for the user.
+.PP
+The user interface is as described in
+.IR omero (1).
+Looking for a face causes the associated file name to be `plumbed'.
+A typical plumb action will be to display the message.
+.PP
+Option
+.B -d
+enables debug messages. Option
+.B -l
+changes the label shown near the faces. By default, this label  is the basename
+of the program used to list the faces to be shown.
+.PP
+If a voice output volume is mounted,
+.I ofaces
+alerts of user arrivals by using
+.IR print (2)
+(with format
+.I infmt
+and the user name as the only argument) on the voice output device.
+.PP
+Option
+.B -o
+is similar, but notifies of user leaves.
+.SH SOURCE
+.B /sys/src/cmd/ofaces.c
+.SH FILES
+.BR /lib/face   "   face database.
+.SH "SEE ALSO"
+.IR mails (1),
+.IR faces (1),
+.IR youps (4),
+.IR face (6),
+.IR omero (1)

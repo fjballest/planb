@@ -1,0 +1,31 @@
+#!/bin/rc
+# gather /who info from uam bb, to merge
+# their staff into our ctx.
+
+while(;){		
+    persons=`{hget 'http://odisea.ii.uam.es:8080/interact/bb/get/person/*' |
+	grep 'entity name' | awk '-F"' '{print $2}' }
+    for (p in $persons){
+	if (echo $p | grep '[^a-zA-Z]'){
+		echo UAM user with bad name $p
+		exits name
+	}
+	if (! test -d /who/$p ){
+		mkdir /who/$p
+		chmod ug+rwx /who/$p
+		cp /who/none/face.gif /who/$p/face.gif
+		echo none >/who/$p/letters
+		echo away >/who/$p/status
+		echo none >/who/$p/where
+		echo uam  >/who/$p/domain
+	}
+	loc=`{ { hget http://odisea.ii.uam.es:8080/interact/bb/get/person/$p/rels/locatedAt
+	   ; echo 'loc="none" type="3"' } |grep 'type="3"' | sed 1q | awk -F'"' '{print $2}' }
+	if (~ $loc none)
+		echo away >/who/$p/status
+	if not
+		echo online >/who/$p/status
+	echo $loc >/who/$p/where
+    }
+    sleep 300
+}

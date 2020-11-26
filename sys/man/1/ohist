@@ -1,0 +1,31 @@
+.TH OHIST 1 
+.SH NAME
+ohist \- omero history
+.SH SYNOPSIS
+.B ohist
+[
+.B -a
+]
+[
+.I app
+]
+.SH DESCRIPTION
+.I Ohist
+prints the history of
+.IR omero (1)
+look or execution events as requested by the user. By default it prints
+the last one. If
+.I app
+is specified, only the events from the named application are considered. Otherwise,
+only
+.IR ox (1)
+events are considered.
+Flag
+.B -a
+can be used to print all the relevant events and not just the last one. Note that the history
+is shared among all user's terminals sharing the history file.
+.SH SOURCE
+.B /rc/bin/ohist
+.SH FILES
+.B $home/ohist
+keeps the history text.

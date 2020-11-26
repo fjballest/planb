@@ -1,0 +1,16 @@
+Saltar a la posición del undo
+threads: unificar
+mouse: hide on type
+ctl: genctl rewrite
+
+cook.c:158: 	threadcreate(cookerthread, cm, 16*1024);
+fs.c:493: 		threadcreate(fsreqthread, r, 32*1024);
+fs.c:749: 	threadcreate(fsthread, nil, 32*1024);
+fs.c:750: 	threadcreate(destroythread, nil, 32*1024);
+fs.c:751: 	threadcreate(writeallthread, nil, 16*1024);
+fs.c:998: 		threadcreate(exitsthread, nil, 8*1024);
+gui.c:273: 	threadcreate(winresizethread, mctl->resizec, 16*1024);
+gui.c:462: 	threadcreate(resizethread, nil,		32*1024);
+gui.c:464: 	threadcreate(panelhupthread, nil,	32*1024);
+gui.c:465: 	threadcreate(mousethread, nil,		48*1024);
+gui.c:466: 	threadcreate(keyboardthread, nil,	32*1024);

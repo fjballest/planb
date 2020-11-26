@@ -1,0 +1,159 @@
+.TH MOUSEFS 4
+.SH NAME
+mousefs, kbdfs  \- file systems for mouse and keyboard network redirection
+.SH SYNOPSIS
+.B mousefs
+[
+.B -AdD
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -n
+.I addr
+]
+[
+.B -V
+.I vol
+]
+.PP
+.B kbdfs
+[
+.B -AdD
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -n
+.I addr
+]
+[
+.B -V
+.I vol
+]
+.SH DESCRIPTION
+.I Mousefs
+wraps the local mouse to permit mouse redirection. This
+program exports a file system with just two files:
+.B mouse
+and
+.BR mousectl .
+These files behave as said in
+.IR mouse (3).
+By default,
+.I mousefs
+mounts itself at
+.B /dev
+before existing devices, or at
+.I mnt
+if
+.B -m
+says so.
+.PP
+.I Kbdfs
+performs the similar task for the keyboard, and supplies
+.B cons
+(compatible with
+.IR cons (3))
+and
+.B kbdctl
+files.
+.PP
+Besides forwarding events from the underlying device to the process(es)
+using the files provided,
+.I mousefs
+and
+.I kbdfs
+listen for remote calls from other
+instances of the programs. Any event sent from a remote peer
+will be handled as if sent from the local device. This permits
+other machines to send mouse and keyboard events to the machine where
+the programs
+run.
+.PP
+Calls can be initiated by a write of
+.B call \fIaddress\fP
+to the
+.B mousectl
+file exported by
+.I mousefs
+or to the
+.B kbdctl
+file exported by
+.IR kbdfs .
+In this case, the program
+connects to such system (using
+.B tcp
+and
+.B mouse
+as the default network and port)
+and redirects events from the local device
+to that connection. A special address
+.B local
+is understood,
+meaning the local system.
+.PP
+In the case of the mouse, writes to
+.B /dev/mouse
+while the system is being called cause event forwarding to the calling
+system, to permit mouse teleporting (e.g., like done by
+.IR acme (1)).
+.PP
+To cancel an outgoing call, press mouse button 1 while at
+the top-left corner of the screen (or window) that is donating its mouse. This reclaims
+the mouse for local usage.
+.PP
+Any connection (no matter who initiated it) can be cancelled by
+a write of
+.B close \fIaddress\fP
+to the
+.B mousectl
+or
+.B kbdctl
+file.
+.PP
+When
+.I kbdfs
+is started before,
+.I mousefs
+arranges for the keyboard to be redirected along with the mouse. This
+requires
+.I kbdfs
+to be started in the machines involved.
+.I Mousefs
+assumes that the port for a
+.I kbdfs
+is one plus the port for the
+corresponding
+.I mousefs
+in that system.
+.PP
+.IR Oscreen (1)
+provides a more convenient user interface to both programs.
+.PP
+Factotum is used to authenticate with peers. Any protocol supported by
+.IR factotum (4)
+can be used. Option
+.B -A
+disables authentication,
+option
+.B -V
+can be used to announce a volume, as said in
+.IR planb (4).
+.SH SOURCE
+.B /sys/src/cmd/mousefs.c
+.br
+.B /sys/src/cmd/kbdfs.c
+.SH "SEE ALSO"
+.IR oscreen (1),
+and
+.IR mouse (3).
+.SH BUGS
+The programs try to avoid loops by refusing to call others while
+being called, and by refusing to call their own address. However, by using
+multiple IP addresses, these programs ban be fooled and loops can be created.
+The event streams are not encrypted.

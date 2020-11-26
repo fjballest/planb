@@ -1,0 +1,111 @@
+.TH OMAIL 1
+.SH NAME
+omail \-  Old omero mail reader and sender
+.SH SYNOPSIS
+.B omail
+[
+.B -dsS
+]
+[
+.B -m
+.I maildir
+]
+[
+.I mbox
+]
+.br
+.B omail
+.B -n
+[
+.B -m
+.I maildir
+]
+[
+.B -o
+.I outgoing
+]
+[
+.I addr
+[
+.I subject
+]
+]
+.SH DESCRIPTION
+.PP
+.I Omail
+is a
+.I omero
+mail reader. Its user interface can be handled as said in
+.IR omero (1).
+Its primary use is for composing and sending mail. Mail reading is best done
+with
+.IR Mails (1),
+which would start
+.I omail
+when necessary to compose new mails and replies. Beware that this program
+will soon be replaced by a Plan B mail delivery volume, which would render it
+obsolete.
+.PP
+When used with option
+.BR -n ,
+it starts a composition panel and does nothing else. An optional address may
+be supplied and, in this case, an optional subject string may be given.
+.PP
+Option
+.B -o
+sets
+.I outgoing
+as the Plan 9 folder where to keep a copy of sent mail. By default it is
+.B /mail/box/$user/outgoing
+unless
+.I maildir
+specifies an alternate path to the user's mail directory.
+.PP
+In the composition panel, headers are single lines before the first
+empty one. The rest is considered as the body of the message. Any
+.B Attach:
+header attaches the named file. The
+.B Include:
+header includes inline attachments. Other headers are as in other
+mail programs.
+.PP
+The
+.IR marshal (1)
+program is used to deliver the mail. See its manual page for details and
+for available user configuration files.
+.PP
+When used to read mail, the program uses
+.IR netplumber (4),
+in particular
+.BR seemail ,
+.BR showmail ,
+and
+.BR sendmail
+ports. See
+.IR mail (1).
+.PP
+The mailbox is shown as kept on disk. As a safeguard,
+deleted mail is a saved to a monthly folder at
+.BR /mail/box/$user .
+Options
+.B -s
+and
+.B -S
+make
+.I omail
+more conservative (and even more so) with regard to the available line width.
+.SH SOURCE
+.TP
+.B /sys/src/cmd/omail
+.SH "SEE ALSO"
+.IR mails (1),
+.IR aliasmail (8),
+.IR ofaces (1),
+.IR omero (1),
+.IR marshal (1),
+.IR nedmail (1),
+.IR upasfs (4).
+.SH BUGS
+A failed experiment. Has been replaced for mail reading. Will be replaced for
+mail sending as well.
+

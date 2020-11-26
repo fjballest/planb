@@ -1,0 +1,19 @@
+.TH VOLS 1
+.SH NAME
+vols \- list volumes in use
+.SH SYNOPSIS
+.B vols
+.SH DESCRIPTION
+.I Vols
+prints the list of volumes used by the
+namespace where it runs. The information is
+obtained through the
+.I ns
+command and the list of volumes provided by
+.IR bns (8).
+.SH SOURCE
+.B /rc/bin/vols
+.SH SEE ALSO
+.IR bns (8)
+and
+.IR ns(1)

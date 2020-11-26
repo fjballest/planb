@@ -1,0 +1,5 @@
+#!/bin/rc
+
+
+fortune /sys/games/lib/ego | sed 's/\$user/'^$user^'/g'
+

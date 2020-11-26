@@ -1,0 +1,97 @@
+.TH MFS 4
+.SH NAME
+mfs, speaksrvstd, spellwords  \- network media file system
+.SH SYNOPSIS
+.B mfs
+[
+.B -abcdwAD
+]
+[
+.B -V
+.I volname
+]
+[
+.B -s
+.I srv
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -n
+.I addr
+]
+[
+.B -p
+.I playcmd
+]
+.PP
+.B speaksrvstd
+[
+.B -i
+]
+[
+.I speech
+]
+.PP
+.B spellwords
+.SH DESCRIPTION
+.I Mfs
+services a volume for playing media files. By default, it provides a service
+to reproduce MPEG 2 Layer 3 files. Using it together with
+.I speaksrvstd
+to provide a speech service is also common.
+It listens for 9P clients at the network address
+.B tcp!*!audio
+by default. Flags
+.B -abcAD
+and options
+.B -Vsmn
+are like those in most file servers and are described in
+.IR planbfs (4).
+.PP
+The player command used to decode the media file is by default
+.B mpeg3play -
+and receives the MPEG file through stdin.
+.PP
+This
+can be changed using option
+.BR -p .
+Most notably, the voice volume relies on this option to wrap speech
+programs. This is done by using
+.I speaksrvstd
+as the underlying program. This program delivers the text given as
+arguments to a remote speech utility (Festival for Linux, in the version
+distributed for this program). Before delivering the text, the filter
+.I spellwords
+is applied to the text, if such filter exists. This is useful to translate the
+text to a more appropriate format for speech, e.g., replace
+.B planb
+with
+.B "plan b"
+and other similar rewrites.
+.PP
+If option
+.B -w
+is supplied
+to
+.IR mfs ,
+each write pipes to a different instance of the underlying program.
+Option
+.B -d
+enables debug messages, and
+.B -D
+enables even more debugging.
+.PP
+Option
+.B -v
+enables a volume control file.
+.PP
+The volume announces itself as
+.B /devs/audio
+unless a different name is given with the
+.B -V
+option.
+.SH SOURCE
+.B /sys/src/cmd/mfs.c

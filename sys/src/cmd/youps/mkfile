@@ -1,0 +1,21 @@
+</$objtype/mkfile
+
+TARG=sendfs portfs plumb
+
+
+BIN=/$objtype/bin
+</sys/src/cmd/mkmany
+
+PLUMBER=sendfs.$O fsys.$O match.$O rules.$O
+PLUMB=plumb.$O
+
+$PLUMBER:	$HFILES plumber.h
+$PLUMB:		$HFILES
+
+$O.plumb:	$PLUMB
+$O.sendfs:	$PLUMBER
+$O.portfs: portfs.$O
+
+youps.install:V:
+	cp youps.rc /rc/bin/youps
+youps.clean:

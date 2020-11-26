@@ -1,0 +1,43 @@
+</$objtype/mkfile
+
+#NEW VERSION. To use the old one:
+#Use the verision from Nov 1st 2005
+
+
+#BIN=$home/bin/$objtype
+BIN=/$objtype/bin
+TARG=omero
+
+PANNELS=\
+	image.$O\
+	draw.$O\
+	gauge.$O\
+	text.$O\
+	frame.$O\
+	block.$O\
+	undo.$O\
+	panels.$O\
+
+OFILES=\
+	fs.$O\
+	gui.$O\
+	layout.$O\
+	util.$O\
+	panel.$O\
+	cmd.$O\
+	block.$O\
+	con.$O\
+	cook.$O\
+	$PANNELS\
+
+HFILES=\
+	gui.h\
+	cook.h\
+
+</sys/src/cmd/mkone
+
+$O.frame: frame.$O block.$O /$objtype/lib/libfs.a
+	$O^l -o $target frame.$O block.$O
+
+panels.c: text.c draw.c gauge.c
+	mkpanels >$target

@@ -1,0 +1,117 @@
+.TH CNSTR 6
+.SH NAME
+cnstr \- Plan B volume constraints and attributes
+.SH DESCRIPTION
+.PP
+The Plan B
+.IR bns (4)
+program permits the application to mount
+at a given mount point those volumes whose names and attributes
+match the ones given as arguments, as said in
+.IR planb (1).
+.PP
+Volume attributes can be used as
+constraints to determine which ones of the
+volumes available for a given mount point are of interest for
+the application. A
+constraint is a set of values for attributes that refer to
+properties of the resource volume. Both volume announces and volume
+mount requests carry a constraint used to pair them.
+.PP
+A constraint is a single argument, field, or string. Its format is a set
+of
+.IR attr = value
+pairs delimited by white space. No space may be around the equal
+sign. Also, when using
+.IR rc (1),
+it is important to quote all the attribute/value pairs together, or they would
+become different constraints, and not a single one.
+.SH ATTRIBUTES
+.PP
+By convention, the following attribute names and values are used through the system, 
+This convention should be followed or users will not know how to request a given
+property for a resource. Of course, this is highly regional and the version shown here
+corresponds to customs at URJC.
+.LP
+.ta +10, +10, +10, +10
+.br
+.di x
+				\ka
+.br
+.di
+.in \nau
+.ti0
+	Attribute	Name	Values	Description
+.in \nau
+.ti0
+	Type	type		Type for the resource serviced.
+Usually corresponds to the data format for the device involved.
+.ti0
+			text	text without null characters.
+.ti0
+			bin	program binary
+.ti0
+			dir	file hiearchy
+.ti0
+			pcm	audio PCM data.
+.ti0
+			mp3	MPEG 2 layer 3 data.
+.ti0
+	Arch	arch		Architecture for the resource. Commonly
+used for
+.B bin
+types.
+.ti0
+			386	Plan B (or Plan 9), 386.
+.ti0
+			arm	Plan B (or Plan 9), ARM.
+.ti0
+			lin	Linux on 386 PC.
+.ti0
+			win	Windows on 386 PC.
+.ti0
+			sym	Symbian, native.
+.ti0
+	UI	gui		User interface service. Identifies the
+type of device available.
+.ti0
+			big	Large graphics device
+.ti0
+			small	Small graphics device
+.ti0
+			txt	Text only device
+.ti0
+	location	loc		Name
+used to represent the location of the volume. Corresponds to a directory in
+.B /where
+that keeps context for the given location.
+.ti0
+.ti0
+	user	user		Identifier
+used for
+the user, to identify volumes of interest for (or owned by) a particular user.
+.ti0
+	machine	sys		Identifier
+used for
+the machine, to identify volumes served by that particular machine.
+.ti0
+	domain	dom		Identifier
+used for
+the adminstrative domain, to locate volumes within domains.
+.ti0
+	Con	net		Connection. Specifies the quality of
+the link used to reach the volume.
+.ti0
+			ok	Latency seems to be ok.
+.ti0
+			bad	Latency is a bad one.
+.LP
+Other types and values not documented here may exist, although those
+commonly used should be described above. The convention is that attributes
+not listed here are not standard at URJC.
+.SH "SEE ALSO"
+.IR planb  (1),
+.IR namespace.planb (4),
+.IR bns (8),
+.IR mount (2).
+

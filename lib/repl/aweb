@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/whale/dist/repl/aweb.db
+dir=/n/whale/usr/web
+excl=(-igroups)

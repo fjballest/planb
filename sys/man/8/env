@@ -1,0 +1,217 @@
+.TH ENV 8
+.SH NAME
+ctxrc, getrole, locate, mail2who, mkwhat, pc2who, setrole, terms, uam2who, update, who, who2uam, who2web, x10outside
+\- environment and context processing
+.SH SYNOPSIS
+.B env/ctxrc
+.PP
+.B env/getrole
+[
+.I machine
+]
+.PP
+.B env/locate
+[
+.B -n
+]
+[
+.I newlocation
+]
+.PP
+.B env/mail2who
+.PP
+.B env/mkwhat
+.PP
+.B env/pc2who
+.PP
+.B env/setrole
+.PP
+.B env/terms
+.PP
+.B env/uam2who
+.PP
+.B env/update
+.PP
+.B env/who
+.PP
+.B env/who2uam
+.PP
+.B env/who2web
+.PP
+.B env/x10outside
+.SH DESCRIPTION
+Collectivelly, these programs provide context awareness and
+context handling for Plan B. Most of them are expected to be customized
+by the space administrators and/or by the users to reflect the local conventions
+of the environment. The programs provided reflect the setting at URJC.
+.PP
+Some of the programs extract
+context information for users, places, and things from various sources and place the
+information within
+.BR /who ,
+.BR /where, 
+and
+.BR /what .
+Some other programs  use that information to
+automate the environment, customize it, and generate new information.
+.PP
+Context information for most places, users in the environment but not
+using this system, and administrative users, is extracted by executing some
+of these programs in CPU servers. Context information for users is not
+extracted. They are expected to arrange for some of these programs to
+run on their name at any machine in the environment, and to customize
+them to make them more appropriate for their particular behaviour.
+Using context to automate the environment is done in the same way.
+.PP
+.I Ctxrc
+is a script that starts all the relevant environment tools, to update context
+and relevant environment devices as things change. This is run by the space
+administrator at a central machine.
+.PP
+.I Uam2who
+imports context from users at UAM, where a different, XML based, system
+is run. This program updates our context file trees.
+.PP
+.I Pc2who
+updates user status for those who are usually close to their laptop, and
+use to be available when the laptop is running.
+.PP
+.I Mail2who
+imports real world mail status from a digital image processing system, to
+update information about unread mail in (real world) mail cabinets.
+.PP
+.I X10outside
+switches on/off corridor terminals depending on the state of the motion
+detectors close to them.
+.PP
+.I Who2uam
+expors part of our local context information to a foreign, XML based, system.
+This is the counterpart of
+.IR uam2who .
+.PP
+.I Who2web
+updates the
+.B http://lsub.org/who
+page to reflect part of our context.
+.PP
+.I Who
+starts a
+.IR ofaces (1)
+program to display the face of those whose status is not
+.BR away ,
+i.e., of those who are in the environment.
+.PP
+.IR Locate
+sets
+.B $location
+if not set, by asking the user for a suitable value. It obtains the
+location from
+.IR hxfs (4)
+or the
+.B loc
+attribute in the
+.IR ndb (6)
+database by default.  It also updates context information at
+.BR /who ,
+.BR /what ,
+and
+.B /where
+if such directories exist. Option
+.B -n
+assumes that there is a new location and ignores any previous
+value for
+.BR $location .
+This program is run from
+.I brc (8)
+during system start up.
+.PP
+.I Terms
+prints  the name of terminals (machines if flag
+.B -a
+is given)
+and its role for the user if
+option
+.B -r
+is given.
+When called only with flag
+.B -k
+.I terms
+prints the list of machines and addresses for their
+.I kbdfs
+keyboard redirectors. Flag
+.B -m
+can be used in the same way to print addresses for mouse
+redirectors.
+Flag
+.B -a
+shows not just terminals, but all machines for the user.
+.PP
+To help users automate how to use their (multiple) machines, different
+roles are assigned to different terminals depending on their properties.
+This is heavily dependent on the user preferences and the local installation.
+.PP
+.I Getrole
+prints the role of
+.I machine
+(or
+.B $sysname
+by default) for the user who makes the call. The role is defined by a
+.IR gofer (1)
+program according to the location and list of devices for the machines
+involved. Common roles are
+.B server
+for CPU servers and shared machines,
+.B main
+for wall sized displays,
+.B remote
+for machines not co-located with the user,
+.B primary
+for the best display available for editing,
+and
+.B other
+for everything else.
+.PP
+.I Setrole
+assigns a role for the machine while booting, and updates context
+information to reflect that. If the
+.B $role
+variable is set, that value is used, otherwise
+.I Getrole
+determines the role for the machine.
+.PP
+.I Mkwhat
+creates the tiny file system to contain
+.B /what/$sysname
+for the machine. This is used on machines that are not always
+avail. Permanent stationary machines have their
+.B /what
+directories in the main file servers (together with
+.B /who
+and
+.B /where
+hierarchies).
+.PP
+.I Update
+updates context for the user. This is usually run from the user's
+profile. It polls the devices in the environment to determine user's
+location and other standard context. Besides, part of the automation
+of the environment for the user (e.g., updating the user's web page
+to reflect the status) is done here as well.
+.SH FILES
+.TP
+.BR /who ,
+.BR /where ,
+.BR /what .
+.SH SOURCE
+.B /rc/bin/env
+.SH SEE ALSO
+.IR x10 (1)
+and 
+.IR hxfs (4).
+.SH BUGS
+Most tools are specific and assume a setup similar
+to the one at the Laboratorio de Sistemas at URJC. There is no
+such thing as a generic-context-toolset.
+
+
+

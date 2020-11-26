@@ -1,0 +1,134 @@
+#!/bin/rc
+
+narg=$#*
+
+
+
+if ( ! ~ $#*  1 ) {
+	echo Usage: binstall repl_letter>[1=2]
+	exit 'not enough args'
+}
+
+if ( grep '^'^$1^' →' /lib/repl/Readme){
+	echo $1 already exists as a replica >[1=2]
+	exit no
+}
+
+fn noauth {
+	echo has no auth for $1
+	exit noauth
+}
+
+fn hasauth {
+	dir=$1
+	touch $1/.$pid	|| noauth $1
+	chgrp -o sys $1/.$pid || noauth $1
+	rm $1/.$pid
+}
+
+repletter=$1
+
+
+echo WARNING: this destroys the contents of /dev/sdC0 are you sure?
+echo Press enter to proceed, del otherwise.
+read;
+
+kill fossil|rc
+
+disk/mbr -m /386/mbr /dev/sdC0/data
+disk/fdisk -baw /dev/sdC0/data
+disk/prep -bw -a^(9fat fossil cache swap) /dev/sdC0/plan9
+
+cat /dev/sdC0/ctl
+
+echo formatting fossil
+fossil/flfmt /dev/sdC0/fossil
+
+fossil/conf -w /dev/sdC0/fossil <<EOF
+fsys main config /dev/sdC0/fossil
+fsys main open -AWP
+fsys main
+create /active/adm adm sys d775
+create /active/adm/users adm sys 664
+users -w
+srv -p fscons
+srv fossil
+EOF
+
+venti='' fossil/fossil -f /dev/sdC0/fossil
+
+mount -c /srv/fossil /n/fossil
+cat /adm/users > /n/fossil/adm/users
+cp /adm/timeconst /n/fossil/adm/timeconst
+mkdir /n/fossil/adm/timezone
+cp /adm/timezone/*  /n/fossil/adm/timezone/
+
+echo users -r /active/adm/users >> /srv/fscons
+echo users -w >> /srv/fscons
+
+fossil/conf -w /dev/sdC0/fossil <<EOF
+fsys main config /dev/sdC0/fossil
+fsys main open -VAWP -c 3000
+fsys main 
+snaptime -s 60 -t 4800
+srv fossil
+srv -p fscons
+EOF
+
+echo Fossil created and formatted.
+
+#replica
+
+
+fn noauth {
+	echo has no auth for $1
+	exit noauth
+}
+
+fn hasauth {
+	dir=$1
+	touch $1/.$pid	|| noauth $1
+	chgrp -o sys $1/.$pid || noauth $1
+	rm $1/.$pid
+}
+
+test -e /srv/fsinstall || echo srv -PWA fsinstall >> /srv/fscons
+while (! test -e /srv/fsinstall) {
+		sleep 2
+}
+mount -c /srv/fsinstall /n/fossil
+mount -c /srv/fsinstall /n/bfossil
+9fs whale
+9fs planb
+hasauth /n/fossil
+hasauth /n/bfossil
+mkdir /n/bfossil/lib
+mkdir /n/bfossil/lib/repl
+
+mkdir /n/bfossil/dist
+mkdir /n/bfossil/dist/repl
+
+. /lib/repl/lsys 
+
+repl/scandb -t -n $repletter $excl $dir $db
+repl/sync -r1 /lib/repl/asys /lib/repl/lsys
+mkdir /n/bfossil/usr/^$user
+mkdir /n/bfossil/usr/^$user^/lib
+mkdir /n/bfossil/usr/^$user^/lib/repl
+mkdir /n/bfossil/usr/^$user^/tmp
+. /lib/repl/lhome 
+repl/scandb -t -n l $excl $dir $db
+. /lib/repl/ahome
+if (! test -e $db ){
+	echo creating replica for $home
+	repl/new $db a $home tmp lib/repl lib/replica
+}
+repl/scandb -t -n a $excl $dir $db
+repl/sync -r1 /lib/repl/ahome  /lib/repl/lhome
+cp /lib/repl/synccmd /n/fossil/usr/^$user^/bin/rc/synccmd
+cp /lib/repl/synccmd $home/bin/rc/synccmd
+
+echo update /lib/vols using another laptop as an example.
+
+exit ''
+

@@ -1,0 +1,244 @@
+.TH PLANB 4
+.SH NAME
+namespace.planb, planbfs \- conventions for Plan B name spaces and volume file severs
+.SH SYNOPSIS
+.B bns
+.PP
+.I planbfs
+[
+.B -A
+]
+[
+.B -abc
+]
+[
+.B -dD
+]
+[
+.B -s
+.I srv
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -n
+.I addr
+]
+[
+.B -V
+.I volspec
+]
+.SH DESCRIPTION
+A Plan B environment is built by assembling multiple volume file servers into
+a name space, through
+.IR bns (4).
+All volume file servers have a common set of options described here
+using
+.I planbfs
+(which is not a real program) as an example. The common behaviour found in most
+Plan B file servers is also described.
+.PP
+Also, the file name space of a Plan B terminal should adhere
+to a number of conventions if the system is to behave normally. 
+This page documents below the Plan B
+specific details, as reflected by the
+.B /lib/namespace.planb
+file used during the boot process.
+See
+.IR namespace (4)
+for the common Plan 9 conventions.
+.SS Volume file severs
+A
+.I planbfs
+program accepts 9P clients and authenticates them if they reach the
+file server from a different machine (not from a pipe or a local network address).
+Option
+.B -A
+disables authentication.
+.PP
+The file server usually mounts itself at a default mount point, or at
+.I mnt
+when given. Options
+.B -abc
+are like in
+.IR mount (1)
+and control the mount flag used in this case.
+.PP
+The network address where the file server listens for new clients
+depends on the service provided by the volume. See
+.B /lib/ndb/common
+for a list of Plan B TCP services. This may be changed by supplying
+.I addr
+with the
+.B -n
+flag. 
+.PP
+Flag
+.B -d
+enables debugging. Many times, debugging may be made even more
+verbose by repeating the flag, or by using
+.B -D
+instead.
+.PP
+The
+.B -V
+option supplies the volume spec, i.e., its global name and set of attributes.
+This is used to announce the volume. Some file servers may insist in announcing
+a particular volume spec when none is given. Most of them will not announce
+if this flag is not used. For example, this might be used
+.EX
+	omero -V /devs/ui
+	omero -V '/devs/ui sys=fake'
+.EE
+to start a window system and announce it as
+.BR /devs/ui ,
+and to start a second one pretending to be running at a
+.B fake
+system.
+.PP
+Some attributes, most notably
+.BR user ,
+.BR sys ,
+and
+.B loc
+will be added by the file server to reflect the user who started the
+service, the system where it runs, and the location at the time the
+service was started (as known by the system). See
+.IR cnstr (6)
+for the conventions regarding attributes.
+.SS Plan B Name Spaces
+The conventions for a Plan B name space are described now.
+.TF /sys/src/cmd
+.TP
+.B /mnt/plumb
+Mount point for
+.IR sendfs (4)
+and
+.IR portfs (4).
+.TP
+.B /dev
+Union of different local devices, usually comming from the kernel. This includes
+also
+.IR mousefs (4),
+.IR kbdfs (4),
+the user clipboard and selection files.
+.TP
+.B /n
+Set of dynamic mount points for remote applications and servers. Most
+things are mounted here. Some ones are described now.
+.TP
+.B /n/9
+File system for Plan 9 terminals.
+.TP
+.B /n/music
+Music archive.
+.TP
+.B /n/once
+File system not archived with venti.
+.TP
+.B /devs
+Set of dynamic mount points for most Plan B volumes.
+.TP
+.B /devs/audio
+Audio device.
+.TP
+.B /devs/voice
+Voice device.
+.TP
+.B /devs/\fIsysname\fPui
+User interface for that system.
+.TP
+.B /devs/x10
+X10 switches and sensors.
+.TP
+.B /devs/hx
+Hexamite active badgets.
+.TP
+.B /devs/ports
+.IR portfs (8)
+for the local machine, 
+.TP
+.B /net/cs
+The communications point for the (caching) connection server,
+.B ndb/ccs
+(see
+.IR ndb (8)).
+.TP
+.B /lib/repl
+Configuration files for
+.IR repl (1).
+.TP
+.B /lib/ndb/vol
+Archives created by
+.IR adsrv (8)
+to reflect volumes known, together with volume configuration files.
+.TP
+.B /lib/namespace
+The file used by
+.B newns
+(see
+.IR auth (2))
+to establish the default (Plan 9) name space; see
+.IR namespace (6).
+.TP
+.B /lib/namespace.planb
+is the analog file to setup the default Plan B name space.
+.TP
+.B /mail
+Directory of electronic mail; see
+.IR mail (1).
+.TP
+.B /mail/box
+Directory of users' mail box files.
+.TP
+.B /mail/box/$user/mails
+Default user's Plan B mail box. See
+.IR mails (1).
+.TP
+.B /sys/man
+The manual.
+.TP
+.B /sys/doc/papers
+Articles documenting the system, i.e., related to Plan B.
+.TP
+.B /sys/doc/9
+Articles describing the Plan 9 system used as the origin
+for the current system.
+.TP
+.B /sys/doc/talks
+Slides and material for Plan B related talks and presentations.
+.TP
+.B /sys/doc/man
+Printed version of the manual.
+.TP
+.B /sys/log
+Log files created by various system services.
+.TP
+.B /usr/inferno
+FIles for the Inferno operating system.
+.TP
+.B /usr/planb
+Files for 2nd edition Plan B.
+.TP
+.B /usr/web
+Web files and services.
+.TP
+.B /who
+Directory with context information for persons. Contains a directory per
+user, named after the user's login name.
+.TP
+.B /what
+Directory with context information for things. Contains a directory per
+place (room number) and machine (sysname). The directories for places
+contain a directory per known thing at that place, to hold its context
+information.
+.TP
+.B /where
+Directory with context information for places. Contains a directory
+per place.
+.SH SEE ALSO
+.IR intro (1),
+.IR namespace (4),
+.IR namespace (6)

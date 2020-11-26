@@ -1,0 +1,22 @@
+<$PLAN9/src/mkhdr
+
+BIN=$HOME/bin
+TARG=ksrv
+
+OFILES=\
+	ksrv.$O\
+	xfake.$O\
+
+HFILES=ksrv.h keycodes.h
+
+UPDATE=\
+	mkfile\
+	$HFILES\
+	${OFILES:%.$O=%.c}\
+
+SHORTLIB=thread 9  
+<$PLAN9/src/mkone
+
+LDFLAGS=$LDFLAGS -L /usr/X11R6/lib -lX11 -lXtst 
+
+

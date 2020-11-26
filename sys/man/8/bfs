@@ -1,0 +1,43 @@
+.TH BFS 8 
+.SH NAME
+bfs \- Import Plan B file server
+.SH SYNOPSIS
+.B bfs
+[
+.I volname
+]
+.SH DESCRIPTION
+This script lists (when no argument is given) the set of known
+volumes that could be imported into the caller name space. This is similar to what
+.IR 9fs (4)
+does on Plan 9. In Plan B, importing volumes is preferred because of the failover
+and the discovery properties.
+.PP
+The listing consists
+is a series of calls to
+.I bfs
+that can be executed to perform the import.
+.PP
+When given an argument, it imports the named volume into the name space.
+.SH EXAMPLES
+This session lists the volumes known, and then imports all the user interface
+volumes:
+.EX
+	; bfs
+	bfs /
+	bfs /dev/kbd
+	bfs /dev/mouse
+	bfs /devs/ui
+	bfs /mnt/plumb
+	bfs /usr
+	bfs /what
+	; bfs /devs/ui
+	; 
+.EE
+.SH SOURCE
+.B /rc/bin/bfs
+.SH "SEE ALSO"
+.IR bns (4),
+.IR 9fs (4),
+.IR vols (1).
+

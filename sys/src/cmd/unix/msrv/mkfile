@@ -1,0 +1,21 @@
+<$PLAN9/src/mkhdr
+
+TARG=msrv
+BIN=$HOME/bin
+OFILES=\
+	msrv.$O\
+	xfake.$O\
+
+HFILES=msrv.h
+
+UPDATE=\
+	mkfile\
+	$HFILES\
+	${OFILES:%.$O=%.c}\
+
+SHORTLIB=thread 9  
+<$PLAN9/src/mkone
+
+LDFLAGS=$LDFLAGS -L /usr/X11R6/lib -lX11 -lXtst 
+
+

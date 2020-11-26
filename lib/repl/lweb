@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/fossil/dist/repl/lweb.db
+dir=/n/fossil/usr/web
+excl=(-igroups)

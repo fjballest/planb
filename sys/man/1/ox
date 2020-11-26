@@ -1,0 +1,186 @@
+.TH OX 1
+.SH NAME
+ox \- Omero X file editor and command interpreter
+.SH SYNOPSIS
+.B ox
+[
+.B -s
+spaceid
+]
+[
+.B -d
+]
+[
+.I file
+]
+.SH DESCRIPTION
+.I Ox
+is the standard
+.IR omero (1)
+editor and shell. Most editing is handled by the omero text panel. The editor is
+only in charge of handling
+omero events to look for further files, execute external comands, and
+performing I/O to the file system to load and store files.
+The mouse interface is that described in
+.IR omero (1).
+.PP
+The user interface has one
+.B col
+panel per user editing. It contains a tag line that can be edited freely by the user,
+and a text panel for actual file edition.
+.PP
+The first word in the tag
+line corresponds to the path of the file being edited or the directory being shown.
+Temporary
+panels shown for command output (that do not correspond to any
+file), have an arbitrary string inside square brackets as file names.
+To save a temporary edit, its tag must be edited to reflect a valid
+file path.
+.PP
+Commands executed by
+.I ox
+get their
+current directory set to that of the file shown in
+the panel where the command was issued. Panels
+for directories run at the directories they show. Panels for files run at the directory
+that contains the file. Panels for command output are named with the directory name,
+the command name and its pid
+inside square brackets.
+.PP
+The
+.B [Cmds]
+panel shows the list of commands run by
+.I ox
+that are still running and proposes commands to kill any of them.
+.PP
+.I Ox
+understands by itself the following commands. When a command
+is considered dangerous it requires confirmation. To confirm, inssist on running the command.
+.TP
+.B Done
+to delete the corresponding panel.
+.TP
+.B Put
+to put changes back to the file system. The file updated is that
+named by the tag line (i.e., the first word of the tag line). 
+.TP
+.B "Get [\fIarg\fP]
+to get a fresh copy of the file (throwing away any change) or the directory. If the file has changes, this requires confirmation. With
+an argument, this command loads a, perhaps new, file into the editor.
+.TP
+.B Cmds
+To show the
+.B [Cmds]
+panel with the list or commands run by
+.I ox
+that are still running.
+.TP
+.B Font
+to switch between omero
+.B T
+and
+.B R
+fonts.
+.TP
+.BI E " cmd
+to run the
+.IR sam (1)
+command
+.I cmd
+on the last selection performed in
+.I omero
+by the user (as said by
+.BR /dev/sel ).
+If the selection is null, the command is applied to the whole
+text.
+Note that the selection corresponds to what
+.B /dev/sel
+says, and that is usually shared among user terminals. This permits
+applying a command from one omero to a selection made at a
+different terminal.
+.TP
+.BI > cmd
+to run
+.I cmd
+using the last user selection as its standard input.
+.TP
+.BI < cmd
+to replace the selection by the standard
+output of the command.
+.TP
+.BI | cmd
+to pipe
+the selection through a filter command.
+.LP
+.I Ox
+uses
+.IR youps (4)
+to listen at both the
+.B edit
+and and
+.B exec
+ports.
+Messages sent to
+.B edit
+request a new edition. When looking for things in omero, ox loads files
+and directories without even looking at the plumbing service. If a thing
+looked for is not a file, plumbing is tried. If this fails, a search is performed in
+the omero panel.
+.PP
+A file address can be given by the plumber. Numeric addresses
+are interpreted as line numbers, other addresses are interpreted
+by
+.IR grep (1),
+which translates them to line numbers.
+.PP
+There is no command in
+.I ox
+to get multiple views for a single editing. Instead, the user
+can replicate the GUI for any editing by using
+.IR omero (1).
+To do so, it is advisable to replicate the whole column for
+the edit, and not just the text panel.
+.PP
+As a help for the user,
+.I ox
+shows different popular commands for each file on its tag line, depending on the
+file name. The file
+.B $home/lib/oxcmds
+can be used to override the default behaviour.
+It must contain
+lines with a
+.IR regexp (6)
+pattern, a single tab, and some text. The text is shown for files whose names
+match the regular expression. The first matching expression wins. Put more
+specific ones first. An
+empty
+.B oxcmds
+causes
+.I ox
+not to show any extra commands.
+.PP
+The special pattern
+.B plumb
+can be used in
+.B oxcmds
+to specify which files should go to the plumbing service and not open with
+the editor. What would be the additional text in the entry is now a regular
+expression matched on the file name.
+.PP
+The flag
+.B -s
+is used by omero to tell
+.I ox
+which namespace id it is using, just to display each namespace marked with a different
+color in the screen.
+.SH SOURCE
+.B /sys/src/cmd/ox
+.br
+.B /rc/bin/Clean
+.SH FILES
+.B $home/lib/oxcmds
+.SH "SEE ALSO"
+.IR omero (1)
+.SH BUGS
+There is no clean way to prevent the user from replicating
+just a tag, or a text panel.

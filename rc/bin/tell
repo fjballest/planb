@@ -1,0 +1,36 @@
+#!/bin/rc
+
+rfork ne
+
+if (~ $#* 0 1){
+	echo usage: $0 user message >[1=2]
+	exit usage
+}
+target=$1
+shift
+if (! test -e /who/$target){
+	echo $target is not listed at who
+	exit who
+}
+loc=`{cat /who/$target/where>[2]/dev/null}
+if (~ $loc ''){
+	echo 'don''t know where' $target is
+	exit who
+}
+unmount /devs/voice
+mount -bc /srv/vol /devs/voice '*/devs/voice loc='$loc
+sent=no
+if (! test -e /devs/voice/output){
+	echo $target is not near any voice output device
+}
+if not {
+	echo $user for $target: $* >/devs/voice/output
+	sent=yes
+}
+if (test -w /who/$target/msgs){
+	echo from $user: $* >>/who/$target/msgs &&
+	if (~ $sent no) {
+		echo message sent to /who/$target/msgs anyway.
+	}
+}
+exit ''

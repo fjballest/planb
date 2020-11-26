@@ -1,0 +1,30 @@
+</$objtype/mkfile
+
+SCRIPTS=\
+	new\
+	sync\
+	prune\
+	scan\
+
+TARG=\
+	scandb\
+	syncdb\
+
+
+HFILES=repl.h
+
+OFILES=\
+	db.$O
+
+BIN=/$objtype/bin/repl
+#BIN=/usr/nemo/bin/386/Repl/
+
+</sys/src/cmd/mkmany
+
+
+
+install:V:
+	for (i in $TARG)
+		mk $MKFLAGS $i.install
+	cp $SCRIPTS $BIN
+	chmod +x $BIN/^($SCRIPTS)

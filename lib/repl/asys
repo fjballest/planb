@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/planb/dist/repl/asys.db
+dir=/n/planb
+excl=(-iBug.where -iwho -iwhere -iwhat -icron -imail/box -imail/queue -imail/tmp -itmp -iadm -ilp/log -isys/log -imnt/keys -idist -ilp -iusr -ilib/ndb/mobile -ilib/font -imail/lib/whitelist -ilib/ndb/vol)

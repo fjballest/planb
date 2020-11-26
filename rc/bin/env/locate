@@ -1,0 +1,42 @@
+#!/bin/rc
+
+# If $location exists, that's the one used.
+# Option -n makes locate ignore the current value.
+# otherwise, we try /devs/loc and ndb loc attr.
+
+if (~ $1 -n){
+	location=()
+	shift
+}
+if (~ $#* 1)
+	location=$1
+
+if (~ $#location 0){
+	default=none
+	if (test -e /devs/loc/$user){
+		default=`{sed 1q /devs/loc/$user}
+	}
+	if (~ $default none '' \n)
+		default=`{ndb/query sys $sysname loc}
+	if (~ $#default 0)
+		default=none
+
+	echo -n 'location? ['^$default^'] '
+	location=`{read}
+	if (~ $location '' \n)
+		location=$default
+	echo -n $location >/env/location
+}
+
+if (echo $location | grep '[^a-zA-Z0-9]'){
+	echo 'Dont do weird things with your location!. Set to none'
+	location=none
+}
+
+echo location is $location
+echo -n $location >/env/location
+echo $location >/who/$user/where
+echo $user >/what/$sysname/owner
+echo $location >/what/$sysname/where
+
+exit ''

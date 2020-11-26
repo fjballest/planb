@@ -1,0 +1,18 @@
+</$objtype/mkfile
+
+BIN=/$objtype/bin
+TARG=omail
+
+
+OFILES=\
+		html.$O\
+		mail.$O\
+		mesg.$O\
+		reply.$O\
+		util.$O\
+		win.$O
+
+HFILES=dat.h
+
+</sys/src/cmd/mkone
+

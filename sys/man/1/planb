@@ -1,0 +1,275 @@
+.TH PLANB 1
+.SH NAME
+planb \- introduction to Plan B 4th edition
+.SH DESCRIPTION
+Plan B is an attempt to build a system designed for
+dynamic distributed environments and provide a convenient
+computing environment.
+In a Plan B environment, a user has multiple machines and devices.
+Machines are assumed to be volatile, they may come and go while the
+user is using the system. 
+.PP
+The environment is made of the set
+of available machines. For example, after starting a player at a machine
+nearby, the user requests to play songs would be serviced by that player.
+Also, the keyboard and mouse at hand are used with any machine and not
+just with the one they are attached to. 
+.PP
+Resources are exported to the network as file
+trees. User programs and machines may import any resource from the network
+by either importing a particular file tree or asking the system to import
+a file tree with a given name and attributes. The system tries to satisfy the
+import requests made and maintains a name space that maps names to particular
+trees that match the given name and attributes. If one such trees becomes
+unavailable, the sytem picks up another (matching) one as a replacement.
+.PP
+Most of the code of the system and most of
+the system applications and libraries are those of Plan 9. This edition of Plan B runs
+as a set of user programs on top of a Plan 9 system. In this manual,
+only pages that  are specific for Plan B refer to the system by that name.
+Pages that correspond to things unchanged, ie. taken verbatim from Plan 9,
+still refer to the system as Plan 9. Plan 9 manual pages that describe elements
+that have a preferred alternative in Plan B, explicitly state this. After reading this page,
+.IR intro (0)
+is a good thing to read.
+.SS System Organization
+In Plan B, all the machines are considered peers and usually run the same
+system software. Any machine (running Plan B or otherwise) may export a resource
+to the Plan B network and behave as a resource server. In particular, we use
+services from Plan 9 authentication servers, Plan 9
+file servers, Linux tools as voice synthesis device servers, etc.
+.PP
+Users own multiple Plan B terminals. Most of them are quite capable of performing heavy
+computing and equipped with large grahical displays. Each one of the terminals
+is owned by a single user who customizes it to import the desired kind of resources
+from those available. 
+.PP
+The I/O devices available, e.g. mouses and keyboards, may be
+used to operate with any of the user machines. In the same way, file viewers and other
+programs may
+be started at different machines and work together with the rest of the environment using
+their name space.
+.PP
+Once users have shown their preferences by building a name space,
+the system is responsible for adapting to the changes of
+the environment. For most tasks, users can forget about
+where to run processes, where to start interfaces, which file trees should
+be mounted, when should services be mounted/unmounted, and so on.
+.SS Name Spaces, Resources, and Volumes
+There are a number of Plan B services
+available, each of which is provided by one or more trees of files. Each file
+tree has a global name and a set of attributes to reflect properties of interest.
+Each file tree is referred to as a
+.IR volume .
+For example, audio playing is a service, which provides a file tree to play audio.
+Each file tree exported
+to the network to provide an interface for audio playing is a
+an audio player volume.
+.PP
+Therefore, in Plan B, (like in Plan 9), almost all objects look like files.
+The object retrieved by a given name is determined by a
+.IR name space 
+that maps names to files.
+See
+.IR namespace (4)
+for the conventions used.
+Each process can independently
+customize its namespace. This is done by
+.I binding
+or
+.I mounting
+volumes (or subtrees of volumes) to names in the name-space-so-far.
+Typically, a user starts with a name space providing volumes for the
+conventional file tree for the system, and then
+binds volumes onto parts of it. Volumes can be bound explicitly,
+or by requesting to the system to bind them as they become
+available.
+.PP
+Plan B has
+.IR "union directories" :
+directories made of several directories all bound to the
+same name, as described in
+.IR intro (1).
+Besides, there are
+.IR "volume unions"
+where all volumes matching the mount request are imported into a
+single name, and not just one of them.
+.PP
+Volumes mount points are serviced by
+.IR bns (4),
+which serves file trees to the underlying system and hot-swaps them
+according to volume availability. See the mentioned manual page for
+details on how to mount and use volumes. Upon mounting a volume,
+any volume that matches the name and attributes given to
+.I mount
+will be mounted as it becomes reacheable. It will be unmounted
+when it is no longer reacheable. Only one of the volumes
+mounted at a mount point will be used at a given time. For example,
+it is usual to call mount so that any audio device volume would
+be bound to
+.BR /devs/audio .
+Although there might be multiple matching volumes, only one of them will
+be shown and used by the system. When the volume used becomes
+unreachable, another one will be picked for use.
+.PP
+When mounting volumes, the user specifies a volume name and a
+set of attribute/value pairs. Only volumes that mach the given name and properties will
+be bound by the system to the mount point. An examle is:
+.EX
+mount /srv/vol /n/audio '/devs/audio user=nemo loc=136'
+.EE
+that imports into
+.B /n/audio
+any volume with name
+.B /devs/audio
+owned by
+.B nemo
+and located at
+.C 136.
+.PP
+Volumes are exported using 9P,
+described in section 5 of this manual, like any other Plan 9 file tree.
+All Plan B servers read and respond to 9P requests to navigate through
+a file tree and to perform operations such as reading and writing
+files within the tree.
+.PP
+The volume discovery protocol is
+implemented by
+.IR bns (4)
+and
+.IR adsrv (8)
+and is used to discover which volumes are available
+for use.
+.SS Booting
+When a terminal is powered on or reset, booting proceeds like
+in Plan 9, as said in
+.IR booting (8).
+The process ends up loading into memory a Plan 9 kernel
+that uses
+.IR bns (4)
+as the initial process. This process defines several environment variables,
+that guide the boot process, sets up a name space that mounts necessary
+volumes to run other programs, and then executes the system script
+.IR brc (8)
+and
+the user's profile
+.B $home/lib/profile
+as a final step.
+.PP
+The environment variable
+.B $planb
+is set to value
+.BR yes
+on Plan B systems.
+.PP
+The file
+.B /lib/namespace.planb
+determines how the namespace is built. This namespace is used to
+run the system start script and the user's profile.
+The user's profile usually runs the
+.IR omero (1)
+window system as the primary user interface.
+.SS Using Plan B
+Using Plan B is very much like using Plan 9, although the user can now
+forget about how to set up a name space for a particular network setup.
+Users should tell the system what kind of resource they want, and let the
+system choose a particular one to satisfy the constraints given by the user.
+Otherwise, the system would not adapt to changes in resource availability.
+.PP
+The user commands of Plan B are those of Plan 9 in many cases. However,
+Graphical interfaces are provided by the
+.IR omero (4)
+service, which provides portable widgets. Command execution is performed
+through the
+.IR portfs (4)
+network messaging service, by sending requests to the
+.B exec
+port, which works for remote machines as well.
+.PP
+The same
+happens to the programming interface documented in section 2. Most notably,
+.IR readf (2)
+is the preferred way for file I/O, instead of the venerable
+.IR read (2)
+interface. User interface programming should rely in
+.IR omero (2)
+and not in
+.IR control (2)
+or
+.IR draw (2).
+There are other changes in the API that are important to easy adaptation
+to environment changes.
+The system is just born and interfaces are still evolving quickly, beware of that.
+.SS Physical Environment
+Context information is available at
+.BR /what ,
+.BR /who ,
+and
+.BR /where .
+Services to operate and inspect the physical environment are available at
+several directories mounted under
+.BR /devs .
+The environment is handled by tools descrived in
+.IR env (8)
+and other programs.
+.SS User Input
+The character-delete character is backspace, and
+DEL is the interrupt character: typing it sends an interrupt to processes running in that window.
+Control is usually the caps-lock key, and the left control, start, and alt buttons are
+usually equivalent to the three buttons found in the mouse. The menu key permits
+character composition.
+See
+.IR keyboard (6)
+for instructions.
+.PP
+The standard editor is
+.IR ox (1),
+which works in
+.IR omero (1)
+panels and integrates well with the rest of the Plan B system.
+.SS Devices and Volumes
+The devices in Plan B are those of Plan 9, described in section 3.  But beware that for
+some devices, most
+notably graphics, text and mouse I/O, audio, and command execution, there are
+other (preferred) servers documented in section 4 of this manual. Such
+servers provide a high-level interface designed for applications, and
+are more portable and adaptative than the ones described in section 3 of the manual.
+.PP
+It is advisable to check first section 4 when looking for a service,
+before resorting to the low level interface provided by native devices. Note
+that devices in section 3 completelly circunvent the name space and
+lead to name spaces that do not adapt to changes in resouce volumes availability.
+.PP
+A Plan 9
+.I "file server"
+provides a file tree to processes.
+A Plan B
+file server is similar, but is usually implemented to provide a volume that can
+be used with the volume mounting facility.
+This means that the server has options to start servicing network requests, announce the
+volume, and has authentication implemented. Authentication is only requested for
+connections from remote machines, because the volume owner is the terminal owner
+in a Plan B installation. See
+.IR planb (4)
+for a description of Plan B volume file servers and other conventions regarding
+the name space. Conventions regarding attributes for volumes are described
+in
+.IR cnstr (6).
+.SH SEE ALSO
+.IR intro (1)
+for a description of the underlying Plan 9 system. 
+.br
+.B planb (4)
+for a description of Plan B conventions regarding volume servers and name
+spaces.
+.br
+.B /sys/doc/9
+for white papers on Plan 9 (which of course can still apply to Plan B),
+and
+.B /sys/doc/papers
+for copies of Plan B papers that might be of help.
+.SH BUGS
+The system is just born. Bugs are found now and then,
+but the system is stable enough to let us use
+it as our development platform and to perform our daily work.
+Most good things come from Plan 9, most bugs are ours instead.

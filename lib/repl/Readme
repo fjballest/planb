@@ -1,0 +1,22 @@
+These are the replicas defined so far:
+
+a → aquamar
+b → nautilus, old t23
+n → nautilus, vaio
+q → nostromo, vaio (esoriano)
+p → nanionic, vaio (paurea)
+s → sailu (paurea)
+k → magneto (kleal)
+
+Trees found at aquamar:
+ahome	→ $home
+ainferno	→ /usr/inferno
+aplanb	→ /usr/planb
+aprof	→ /usr/prof
+asys	→ whole system (w/o parts that come from another repl.)
+aweb	→ /usr/web
+
+Trees found at other machines:
+l*	→ /n/fossil/... for the replicas described above.
+
+To create a new one, talk to nemo.

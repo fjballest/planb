@@ -1,0 +1,263 @@
+.TH OMERO 1
+.SH NAME
+omero \- Plan B portable window system
+.SH SYNOPSIS
+.B omero
+[
+.B -A
+]
+[
+.B -dDCFLBMTS
+]
+[
+.B -n
+.I addr
+]
+[
+.B -p
+]
+[
+.B -V
+volspec
+]
+[
+.B -t
+mouseaddr
+[
+.I initprog
+]
+.SH DESCRIPTION
+.I Omero
+is the Plan B window system and the Graphical User Interface resource volume.
+It services a tree of files (i.e., a volume) to implement the Plan B GUI service.
+Most programs that use
+.I omero
+have names that start with the letter
+.BR o ,
+to make it easier to locate them.
+.PP
+You can refer to
+.IR omero (4)
+for a description of both the file tree and the
+command arguments. This page is an introduction and documents the user interface to
+the window system.
+.PP
+Unlike other window systems,
+.I omero
+implements both window management and the set of GUI components available.
+In this respect, it is both a window system and a GUI toolkit. The user interacts
+with
+.I omero
+using any keyboard and pointing device avalable in the network, see
+.IR oscreen(1)
+for examples.
+Applications interface with
+.I omero
+using the files in its volume, and perhaps listening for omero events. This is usually done via
+.IR omero (2)
+routines.
+.PP
+.I Omero
+starts
+.IR ox (1)
+automatically,
+to permit file edition, command execution and file browsing. Other applications may be
+started by the user, or by supplying a
+.B initprog
+rc script to the program.
+.PP
+A screen handled by
+.I omero
+consists of a tree of graphical panels. There are three kind of panels:
+.IR rows ,
+.IR columns ,
+and
+.IR atoms .
+Rows and columns group inner panels and handle their layout. A row
+arranges for inner panels to be disposed in a row. A column does what can be
+expected. Atoms  include text, images, gauges, and the like.
+See
+.IR omero (4)
+for the complete list.
+.PP
+The graphical representation of panels in the screen corresponds to the file tree
+serviced by
+.I omero
+to its clients. For example, a screen that contains two rows has two corresponding
+files in its root directory. If the user moves one row within the other using the
+mouse, the same
+would happen to their respective files; and vice-versa.
+.PP
+Any panel may have a tag (a square near its top-left corner). By default,
+rows and columns have tags, and atoms do not. This can be changed through the file
+system interface. The vertical space below the tag is called the margin.
+When a panel has hidden
+panels within it, its tag is shown as a vertical rectangle instead of a square box. 
+.PP
+A panel may be in a
+.I dirty
+state, when the application using it considers that it has unsaved state. In this case,
+the tag is shown in a light green color.
+.PP
+The
+.I delete
+key sends an interrupt request to the application. Note this is different from sending
+a system interrupt to stop it. To stop applications, you must
+use a command to send interrupt notes
+to them. This may change in the future.
+.PP
+The
+.I Escape
+key selects all the text typed since the last click of the mouse. The
+.I Return
+key does the same and requests the execution of the selected text.
+.PP
+Omero uses a three button mouse. In Plan B, the left
+.IR control ,
+.IR Start ,
+and
+.I Alt
+keys in the keyboard are equivalent to the left, middle and right mouse buttons.
+Later we
+describe the mouse operations available in tag and margins, and then
+we describe the mouse operations available within atoms.
+.PP
+If one or more mouse addresses are given with option
+.B -t
+omero intercepts function keys (starting at
+.BR F1 )
+and redirects the mouse to the corresponding address when the
+function key is pressed.
+.SS Selection
+The user selection and clipboard are maintained by a resource
+volume, which is usually shared among Plan B terminals for the user. This means
+that operations that involve either a user selection, or text placed in the clipboard,
+may be performed across different machines.
+.SS Mouse in Tag and Margins
+A click with the left button in a tag changes a row into a column and vice-versa.
+It has no effect in other types of panel.
+.PP
+A click with the middle button in a tag or margin maximizes the panel by
+hidding its siblings.
+.PP
+A click with the right button in a tag or margin hides the panel. 
+.PP
+The left and middle mouse buttons
+can be used to drag a tag (or margin) and drop it somewhere else (press
+button, move pointer somewhere else, release).
+This moves the corresponding panel to a target location. The left
+button takes as the destination the innermost row/column that is not
+created by an application and contains the target. The middle button
+takes as the destination the innermost row/column than contains the
+target.
+.PP
+In any case,
+.I Omero
+does its best to locate the panel in the new placement, by considering the relative
+position within the target where the drag terminated.
+.PP
+The mouse wheel (or up/down arrow keys) can be used in the tag of a panel
+to control the number
+of inner elements shown.
+Moving the wheel down (or pressing the
+down arrow key) in the tag of a panel, changes the number of panels shown within it.
+This number cycles between 1 and the number of inner panels. For example, a
+down arrow in the tag of the panel used by an application
+has the effect of minimizing it (i.e. show only the first inner panel, which is usually
+a text line or tag). In this example, pressing down-arrow once more with show the first two
+inner panels, and so on. 
+.PP
+Moving the wheel up (or pressing the up arrow key) in the tag
+of a panel, unhides all panels contained within it. This can be used, for example, to restore a
+previously hidden panel, by using up-arrow in its container.
+.PP
+The wheel (or up/down keys) can be used in the left margin of a panel (below its tag)
+to cycle the order of its inner panels.
+This is useful to see panels can cannot be seen
+due to the lack of screen space, and to change the order in which
+panels are shown.
+.PP
+A chord of left and middle buttons in a tag or margin can be used to copy
+to the clipboard the path of the panel affected. For rows and columns with
+tags, this is equivalent of using the
+.B Sel
+command to snarf the path of the file that represents the panel.
+.PP
+A chord of left and right buttons in a tag or margin can be used to execute
+the command
+.B Ocp
+using the contents of the snarf buffer and the involved panel path as
+arguments. This has the effect of replicating a panel whose path is in
+the snarf buffer.
+.SS Mouse and Arrow Keys on Atoms
+Within a panel, a click with the left button can be used to set the insertion point. The left button can be also used to select
+region of text.
+.PP
+A click with the middle button
+requests the execution of the command corresponding to the word
+or selection at the click. On images, the command depends on the application.
+.PP
+A click with the right button sends the word or selection at the click
+to the
+.IR youps (4),
+service
+to plumb the text to the appropriate application in the network.
+.PP
+Holding the right button down is used to scroll on text panels. The
+.I scrollbar
+is actually the panel itself. The top corresponds to the start of the text,
+and the bottom corresponds to the end of the text.
+.PP
+A chord of left and middle buttons (press left, then press middle,
+release middle, release left) can be used to cut text. A chord of
+left and right buttons pastes the text in the snarf buffer.
+.PP
+A chord of middle and left buttons runs a command using the selection
+as an argument.
+.PP
+A chord of right and left buttons extends the current selection to the point at
+the chord.
+.PP
+The up and down keys (or the mouse wheel) causes a text panel to scroll up
+and down. The left key performs an undo operation on editable text panels, and
+the right key performs a redo.
+.SS Builtin Commands
+.I Omero
+understand by itself the commands:
+.TP
+.I Row
+to create a row,
+.TP
+.I Col
+to create a column,
+.TP
+.I Ox
+to run another instance of
+.IR ox (1),
+which uses its own separate namespace.
+.TP
+.I Del
+to delete a panel.
+.TP
+.I Sel
+to copy to the clipboard the path of the file representing a panel,
+.TP
+.I Arg
+to append to the clipboard the path of a panel,
+.LP
+In all cases, the command argument is selected by a click with the left button.
+For example, to delete a panel: Middle-click on
+.I Del
+and then left click in the panel. Along the lines of Plan 9's
+.IR acme (1),
+all text is similar. It does not matter where the text of the command stands or who
+did type it.
+.SH SOURCE
+.B /sys/src/cmd/omero
+.SH "SEE ALSO"
+.IR ox (1),
+.IR omero (4),
+.IR rio (4),
+.SH BUGS
+Frame usage should be reworked.
+

@@ -1,0 +1,57 @@
+mount -aC #s/vol /root !/
+bind -a $rootdir /
+bind -c $rootdir/mnt /mnt
+
+bind #c /dev
+bind #d /fd
+bind -c #e /env
+bind #p /proc
+bind -c #s /srv
+bind -a #S /dev
+bind -a #P /dev
+bind -a #U /dev
+bind -a #m /dev
+bind -a #L /dev
+bind -a #t /dev
+bind -a #¤ /dev
+bind -a #Ι /dev
+bind -a #κ /dev
+bind -a #v /dev
+bind -a #Σ /dev
+bind -a #r /dev
+bind -a #κ /dev
+bind -a #Λ /dev
+bind -a #U /dev
+bind -a #$ /dev
+bind -a #r /dev
+mount -a #s/vol /dev
+
+mount -a #s/ip /net
+bind -a #l /net
+bind -a #I /net
+
+
+# mount points
+mount #s/slashn /n
+# authentication
+mount -a /srv/factotum /mnt
+# more mount points
+mount -ac #s/slashmnt /mnt
+mount #s/slashdevs /devs
+
+# standard bin
+bind /$cputype/bin /bin
+bind -a /rc/bin /bin
+
+bind -a #l /net
+bind -a #l1 /net
+
+# old stuff
+mount -c #s/boot /n/9 main/active
+bind -c /n/9/cfg /cfg
+
+mount -c #s/vol /usr !/usr
+bind -c /usr/$user/tmp /tmp
+bind -bc /usr/$user/bin/rc /bin
+bind -bc /usr/$user/bin/$cputype /bin
+cd /usr/$user

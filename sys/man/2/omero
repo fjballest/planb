@@ -1,0 +1,259 @@
+.TH OMERO 2
+.SH NAME
+createpanel, createsubpanel, panelpath, openpanel, openpanelctl, closepanel, closepanelctl, seekpanel, readpanel, dirstatpanel, readallpanel, writepanel, readpanelctl, writepanelctl, omeroterm, omeroeventchan, clearoev, removepanel, panelctl, plumbexec, plumblook, evhistory, createport, createportproc \- Omero graphical user interface library
+.SH SYNOPSIS
+.B #include <u.h>
+.br
+.B #include <libc.h>
+.br
+.B #include <thread.h>
+.br
+.B #include <omero.h>
+.PP
+.nf
+.ft L
+.PP
+.ta 11n +11n +11n +11n
+struct Repl{
+	Repl*	next;	// in replica list
+	char*	path;	// e.g., "/n/.../row:2/slider:volume"
+	int	fd[2];	// data and ctl fds
+};
+struct Panel{
+	QLock;		// name is WORM, so mostly for repl.
+	char*	name;	// e.g., "slider:volume"
+	Repl*	repl;	// known replicas
+	int	nrepl;
+	Channel*evc;	// events here or through oeventchan(nil)
+	...
+};
+.PP
+.B
+Panel*		createpanel(char* name, char* type, char* omero);
+Panel*		createsubpanel(Panel* g, char* name);
+char*		panelpath(Panel*);
+int		openpanel(Panel* g, int omode);
+int		openpanelctl(Panel* g);
+void		closepanel(Panel* g);
+void		closepanelctl(Panel* g);
+vlong		seekpanel(Panel*g, vlong pos, int type);
+long		readpanel(Panel* g, void* buf, long len);
+Dir*		dirstatpanel(Panel* g);
+void*		readallpanel(Panel* g, long* l);
+long		writepanel(Panel* g, void* buf, long len);
+long		readpanelctl(Panel* g, void* buf, long len);
+long		writepanelctl(Panel* g, void* buf, long len);
+void		omeroterm(void);
+Channel*		omeroeventchan(Panel* g);
+void		clearoev(Oev* e);
+void		removepanel(Panel* g);
+int		panelctl(Panel* g, char* fmt, ...);
+.PP
+int		plumbexec(char* dir, char* arg);
+int		plumblook(char* dir, char* arg);
+void		evhistory(char* prg, char* ev, char* arg);
+Channel*		createportproc(char* port);
+int		createport(char* name);
+.PP
+extern char*appluiaddress;
+extern int	omerodebug;
+.fi
+.SH DESCRIPTION
+These functions provide a convenient application interface for using
+.IR omero (4)
+to build user interfaces for Plan B applications.
+The application must be programmed using
+.IR thread (2)
+if this library is used.
+.PP
+Each omero panel is represented by a
+.I  Panel
+data structure, where
+.I Name
+is the file name (not the full path) for the panel in the omero file system.
+.I Repl
+is the list of of copies known for the panel. Each once is called a replica. For each
+replica,
+.I path
+is the absolute path for its file in omero, when it is mounted at the standard mount
+point
+.BR /devs/$sysnameui .
+.PP
+The library creates processes to service events from omero and
+handles replication of omero panels by itself. Different copies of the same panel
+are kept synchronized by the library. When the application updates a panel,
+the library updates all known replicas. When a panel reports a data change through
+event delivery, the library pulls the data, updates other replicas, and delivers the
+event to the application. The library handles in the same way
+the creation, deletion, and control operations for graphs within
+replicated interfaces. 
+.PP
+If the omero file tree for a given replica is not
+mounted, the library attempts to mount it at its standard mount point when it is first seen.
+Regarding failure, an error at a replica causes it to be removed from the replica list
+and a failed operation at all the known replicas is considered to be failed.
+A panel is considered to be gone if all its replicas are gone.
+.PP
+The library assumes that the file name (not the path) for a given panel
+is unique. Events sent by omero carry the path for the panel and
+are used to determine which panels are affected. The name determines the graph,
+and the full path determines the replica. When omero reports that a panel moved,
+was created, or was deleted,
+the library updates the set of replicas. 
+.PP
+.I Createpanel
+initializes the library, if not yet initialized,  mounts
+.I omero
+if necessary, and starts an event listener. The function creates a top-level
+.I panel
+for the application  with the
+.I name
+specified as an argument. The name is randomized by the function. The parameter
+.B type
+argument is usually the string
+.B col
+and determines the type of panel created.  The panel is kept in hold mode and its
+control file is open and programed with the application address before returning to the user.
+See
+.IR omero (4)
+for an exhaustive list of panel types and more details about their behaviour.
+.PP
+.I Createsubpanel
+behaves in a similar way, but creates the named panel within the one
+passed as a parameter. Unlike
+.I createpanel
+this function does not set the panel in hold mode and does not open its control file.
+.PP
+.I Panelpath
+returns the path for the directory representing the first replica found for the panel.
+.PP
+.I Openpanel
+opends the data file(s) for the panel (there is one file per replica).
+.I Openpanelctl
+does the same for the control file(s).
+.I Closepanel
+and
+.I closepanelctl
+are the respective close operations.
+.PP
+While open,
+.IR seekpanel ,
+.IR readpanel ,
+and
+.IR writepanel
+can be used to seek, read, and write the panel data file.
+.IR Readpanelctl ,
+and
+.IR writepanelctl
+do the same for the control file. Also,
+.I panelctl
+permits formatted output to the control file.
+.PP
+.I Dirstatpanel
+returns a
+.IR stat (2)
+structure (unpacked) for the data file of the first replica of the panel.
+.PP
+As a convenience,
+.I readallpanel
+returns all the contents of the data file for the panel.
+.PP
+.I Removepanel
+deletes a panel (i.e. all its replicas).
+.PP
+.I  Omeroterm
+terminates any user interface created by
+the library
+and kills any process started by the library (to receive and process events).
+.PP
+.I Omeroeventchan
+returns a channel where events from
+.I omero
+are sent. When its parameter is nil, a global channel is returned. When
+the parameter is a panel, the routine initializes the panel's
+.I evc
+field with a channel where events for that panel are sent.
+.PP
+Events are represented by
+.I Oev
+structures that contain the event name,
+.IR ev ,
+and event arguments,
+.IR arg .
+The
+.I panel
+and
+.I path
+to the replica generating the event
+are initialized before delivering the event to the user.
+.EX
+struct Oev {
+	Panel*	panel;
+	char*	path;	// to repl
+	char*	ev;
+	char*	arg;
+};
+.EE
+Once used, event resources are to be deallocated by calling
+.IR clearoev .
+This is important because it may lead to (already removed) panels
+to be destroyed.
+.PP
+When the last replica for the application's interface is known to be gone,
+the user routine
+.I omerogone
+is called. This routine must be provided by all applications using this library.
+It usually terminates the application. If the application wants to stay running
+and stay listening to further omero connections, it should return zero.
+.PP
+.I Plumbexec
+and
+.I plumblook
+are helper routines to make the user interface respond to execution and
+looking up requests in a similar way to
+.I ox (1)
+and other omero applications. They send
+.I arg
+to
+.IR portfs (4)
+as either
+.B exec
+or
+.B look
+requests.
+.PP
+.I Portfs
+ports can be created using
+.I createport
+and supplying the
+.I name
+for the port file (basename only). Instead of creating the port and
+servicing it by hand,
+.I createportproc
+returns a channel where
+.I Plumbmsg*
+elements are forwarded as they are obtained by a process that
+creates and serves the port. This is more convenient, but requires
+using the thread library and does not permit a fine control over the
+ports.
+.PP
+.I Evhistory
+updates the omero event history for the user. It receives the program name,
+the event name and its argument.
+.SH EXAMPLES
+See
+.IR oclock (1)
+for a simple example that does not require user interaction, and
+.IR ox (1)
+for a more elaborate example that includes user input.
+.SH SOURCE
+.B /sys/src/libomero
+.SH SEE ALSO
+.IR omero (4)
+and
+.IR ox (1),
+.SH DIAGNOSTICS
+These functions set
+.IR errstr .
+.SH BUGS
+This service is still evolving. Expect changes.

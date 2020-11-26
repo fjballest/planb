@@ -1,0 +1,12 @@
+#
+#  standard numeric format
+#
+I BMACLIB/bibinc.shortnames
+H
+AA
+EA
+'so \*(l]/bmac.std
+.de s[   \" start reference
+.nh
+.IP \\*([F. 5n
+..

@@ -1,0 +1,27 @@
+.TH OSTATS 1
+.SH NAME
+ostats \- display system statistics in omero
+.SH SYNOPSIS
+.B ostats
+[
+.BI - option
+]
+[
+.I machine
+\&...
+]
+.SH DESCRIPTION
+.I Ostats
+is like
+.IR stats (4)
+but uses
+.IR omero (1)
+as the user interface service, instead of the native graphics system. Options
+are like in
+.IR stats (4).
+.SH SOURCE
+.B /sys/src/cmd/ostats.c
+.SH SEE ALSO
+.IR stats (8)
+and
+.IR omero (1).

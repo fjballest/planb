@@ -1,0 +1,57 @@
+#!/bin/rc
+
+# w2xml: convert /who /where /what to silly xml
+# early verson.
+
+if (~ $1 -d) {
+	while(;){
+		$0 >/usr/web/who/who.xml.new
+		mv /usr/web/who/who.xml.new /usr/web/who/who.xml
+		sleep 300
+	}
+	exit ''
+}
+
+whotag=who
+wheretag=where
+whattag=what
+whodirtag=user
+wheredirtag=place
+
+fn tab {
+	if (! ~ $1 1)
+	for (s in `{seq 1 $1}){
+		echo -n '   '
+	}
+}
+
+fn tagbegin {
+	tab $1
+	echo '<'^$2^' name="'^$3'">'
+}
+
+fn tagend {
+	tab $1
+	echo '</'^$2^'>'
+}
+fn tag {
+	tab $1
+	echo '<property name="'^$2'">'^$3^'</property>'
+}
+users=(acastillo afernand alcortes almartinez anto asantos barrera caguero cespedes dchaparro esoriano eva fmartin grex isanz jcenteno jcespedes jgb jjamor jmplaza kleal llopez lrodero mero mortuno nemo none paurea pbarrera pheras rafaela sarevalo tgonza vmanuel vmo zeed)
+
+tagbegin 1 $whotag who
+cd /who
+	for (d in $users){
+		tagbegin 2 $whodirtag $d
+		cd $d
+			for (f in *){
+				if (~ $f status where letters){
+					x=`{cat $f}
+					tag 3 $f $"x
+				}
+			}
+		cd ..
+		tagend 2 $whodirtag $d
+	}
+tagend 1 $whotag who

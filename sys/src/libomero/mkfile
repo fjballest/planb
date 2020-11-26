@@ -1,0 +1,33 @@
+</$objtype/mkfile
+
+LIB=/$objtype/lib/libomero.a
+OFILES=\
+	srv.$O\
+	panel.$O\
+	plumb.$O\
+	port.$O\
+
+
+HFILES=/sys/include/omero.h
+
+UPDATE=\
+	mkfile\
+	$HFILES\
+	${OFILES:%.$O=%.c}\
+	${LIB:/$objtype/%=/386/%}\
+
+
+PROGS=oplayer.c 
+</sys/src/cmd/mksyslib
+
+programs:VQ:
+	cd /sys/src/cmd
+	for (p in `{echo o*.c | sed 's/\.c/ /g'}){
+		echo $p
+		mk $p.install ; mk $p.clean
+	}
+	for (d in omail ox){
+		echo $p
+		cd $d ; mk install ; mk clean ; cd ..
+	}
+

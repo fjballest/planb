@@ -1,0 +1,36 @@
+.TH OVOLS 1
+.SH NAME
+ovols \- list volumes in use
+.SH SYNOPSIS
+.B ovols
+[
+.B -dv
+]
+[
+.I dir
+.B ...
+]
+.SH DESCRIPTION
+.I Ovols
+prints, for each volume mount point given as an argument,
+the volume used within the
+namespace where it runs. The list is shown within a
+.IR omero (1)
+panel. When a volume is switched, and a different volume becomes used,
+the program flashes the omero panel several times to alert the user of the
+change.
+.PP
+Flag
+.B -v
+makes the program verbose, to make even more noise upon volume changes. Flag
+.B -d
+enables debug diagnostics.
+.PP
+If you are using this program, you did mess up your namespace enough not to be
+sure of what you are using. We suggest you cleanup your namespace instead.
+.SH SOURCE
+.B /sys/src/cmd/ovols.c
+.SH SEE ALSO
+.IR bns (8)
+and
+.IR ns (1)

@@ -1,0 +1,29 @@
+.TH PAGER 1
+.SH NAME
+pager \- display postscript, pdf, and other pages
+.SH SYNOPSIS
+.B pager
+[
+.B -p
+.I port
+]
+.SH DESCRIPTION
+.I Pager
+creates and reads a
+.IR portfs (4)
+.B postscript
+port (or
+.I port
+when given). Messages sent to the port are correspond to a
+files to be shown using
+.IR page (1)
+in the screen where the program was started.
+.PP
+This is useful to ask the system to show documents at a particular
+system, by starting this program on that system.
+.SH SOURCE
+.B /sys/src/cmd/pager.c
+.SH SEE ALSO
+.IR page (1).
+
+

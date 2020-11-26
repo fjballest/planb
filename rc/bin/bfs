@@ -1,0 +1,37 @@
+#!/bin/rc
+# Helper to mount Plan B volumes that we know about
+# 
+
+switch($#*){
+case 0
+	grep -v '^#' /dev/vol | awk '{printf("bfs %s\n",  $4);}'  | sort | uniq
+case 1
+	# These volumes are unions:
+	if (~ $1 /devs/ui &&) {
+		if (! { ns | grep '/devs/ui' } >/dev/null >[2=1])
+			exec mount -bc /srv/vol /devs '*/devs/ui user='^$user
+		exit ''
+	}
+	if (~ $1 /what )
+		exec mount -c /srv/vol /what '*/what'
+	# Dont mount kbd/mouse because they are already mounted
+	# and we do not want to loose them.
+	if (! ~ $1 / /dev/kbd /dev/mouse)
+		exec mount -c /srv/vol $1 $1 
+	exit ''
+case 2
+	switch($1){
+	case /dev/kbd
+		;
+	case /dev/mouse
+		;
+	case *
+		exec mount -c /srv/vol $1 $1^' '^$2 
+	}
+case *
+	echo 'usage: bfs name [spec]' >[1=2]
+	exit usage
+}
+
+
+exit ''

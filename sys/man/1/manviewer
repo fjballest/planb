@@ -1,0 +1,30 @@
+.TH MANVIEWER 1
+.SH NAME
+manviewer \- display manual pages
+.SH SYNOPSIS
+.B manviewer
+[
+.B -d
+]
+[
+.B -p
+.I port
+]
+.SH DESCRIPTION
+.I Manviewer
+creates and reads a
+.IR portfs (4)
+.B man
+port (or
+.I port
+when supplied). Messages sent to the port are of the format
+.B manpage[section]
+and correspond to a manual page to show.
+.PP
+This is useful to ask the system to show manual pages at a particular
+system, by starting this program on that system.
+.SH FILES
+.B /sys/man
+manual source
+.SH SOURCE
+.B /sys/src/cmd/manviewer.c

@@ -1,0 +1,432 @@
+.TH OMERO 4
+.SH NAME
+omero \- Plan B portable window system
+.SH SYNOPSIS
+.B omero
+[
+.B -A
+]
+[
+.B -dDCFLBMTS
+]
+[
+.B -n
+.I addr
+]
+[
+.B -p
+]
+[
+.B -V
+volspec
+]
+[
+.I initprog
+]
+.SH DESCRIPTION
+.I  Omero
+is the Plan B window system and the Graphical User Interface resource volume,
+as described in
+.IR omero (1).
+It services a tree of files (i.e., a volume) to implement a Plan B GUI service. Upon
+starting, it runs
+.IR ox (1)
+to permit the user to edit, execute commands and browse the system. Besides, the
+script
+.I initprog
+is executed if given as a parameter. Most users use
+.B /bin/owins
+as the omero startup script.
+.PP
+By default,
+.I omero
+listens for clients (authenticating them) at
+.BR tcp!*!11007 .
+Options
+.BR -A ,
+.BR -n ,
+and
+.BR -V
+can change this behaviour and are like those of other Plan B volume servers. See
+.IR planb (4)
+for a description.
+Uppercase options are used for debugging and may lead to very verbose executions.
+.PP
+.I Omero
+provides GUI components known as
+.IR panels ,
+like rows, columns, buttons, sliders, and others described below.
+Each panel is represented by a directory that contains a
+.B ctl
+and a
+.B data
+file.
+Panels can be created and deleted by making and removing such directories.
+Besides the two files mentioned above,
+rows and columns have one extra subdirectory for each one of
+the panels they contain. The order of the files contained in a directory is representative
+and corresponds
+to the order used to show their panels in the screen, which is usually the order
+of their creation. The order in the screen is left to right for rows and top to down for
+columns.
+.PP
+The file system can be used to move, copy (i.e replicate), and delete graphical
+items serviced by
+.IR omero .
+The applications affected are usually unaware of this if they are using
+.IR omero (2).
+.PP
+The name of a directory determines the type of panel it represents. A name is of the form
+.I type:name
+(eg.
+.BR text:ox.3442 )
+where
+.I type
+is any of
+.BR row ,
+.BR col ,
+.BR image ,
+.BR text ,
+.BR label ,
+.BR button ,
+.BR tag ,
+.BR gauge ,
+.BR slider ,
+.BR page ,
+and
+.BR draw .
+Usually,
+.I name
+is a string randomized by the application to permit any two names to
+cohexist within the same directory (i.e., within the same container panel).
+.PP
+.I Omero
+uses the file
+.B /dev/snarf
+as the clipboard, to put there the bytes when a cut operation snarfs them.
+The file
+.B /dev/sel
+is updated by
+.I omero
+with the file system path for the last
+.B text
+panel where some text was selected.
+This is a helper for executing commands that operate on selected text.
+.SS Panels
+Panel directories contain a
+.I data
+and a
+.I ctl
+file. The data file contains a portable representation of the graphical
+panel, text for text elements and Plan 9 images for images. The ctl file
+contains a textual representation of the panel attributes. Some attributes
+are common to all panels and are described later. The textual
+representation for an attribute may be issued as a control request by
+writing it to the control file.
+.PP
+Both files are complete descriptions (i.e. they are not streams), which means that
+tools like
+.IR tar (1)
+can be used to copy a hierarchy of panels from one place to another (maybe at
+different machines), and the resulting GUI would be similar. If the application is using
+.IR omero (2),
+it would properly handle all the copies of its interface.
+.PP
+What follows documents
+the list of panels along with the format of their data files and their specific
+control requests. Attributes and control requests common to all panels are
+described later.
+.PP
+.I Image
+panels
+hold Plan 9 images as data. The size of the panel is that of the image. Its
+.B ctl
+file contains
+.EX
+	size nx ny
+.EE
+besides other attributes, to report the size of the image measured in pixels.
+.PP
+.I Page
+is like
+.I image
+but grows depending on available space and allows mouse
+interaction to see images bigger than the space available.
+.PP
+.I Text
+is a text panel that permits edition. The contents of the
+.B data
+file is the text being edited. See
+.IR omero (1),
+and
+.IR ox (1)
+for a description of the user interface.
+Its
+.B ctl
+file contains
+.EX
+	size nx ny
+	sel s0 s1
+	mark n
+.EE
+besides other attributes. Size is like before, but measured (approximately)
+in characters. The 
+.B sel
+attribute shows the current selection start and end
+position. The
+.B mark
+attribute keps a relative position that is maintained by omero despite
+text edition. This is used primarily by
+.IR ox (1),
+to keep track of the output insertion point for the panel.
+.PP
+Besides the requests that can be made for these attributes
+text panels understand other control
+requests:
+.TP
+.B "search text
+to search for the given text. If it has more than one line, this
+request must be the only one being sent to the control file. If the request
+is made using
+.B panelctl
+as described in
+.IR graph (2),
+the search is performed on all replicas of the panel, which is not wise. Updating
+the control file of just one replica is usually the right thing to do. The same happens
+to the following requests.
+.TP
+.B "look \fIarg\fP
+to look for
+.I arg
+like when the user uses the mouse to look for it on the panel.
+.TP
+.B "exec \fIarg\fP
+is similar, but mimics a user request to execute the given string instead.
+.TP
+.B "undo
+to undo the last editing. 
+.TP
+.B "redo
+to redo the last undone operation.
+.TP
+.B "cut
+to cut the selection.
+.TP
+.B "paste
+to paste the contents of
+.B /dev/snarf
+replacing the current selection.
+.TP
+.B "ins \fIarg\fP
+to insert text. The argument is a string with the insertion offset,
+the number of runes, and the runes to insert. This operation and the
+next are usually performed
+on all the replicas by means of
+.IR panelctl (2).
+.TP
+.B "del \fIarg\fP
+to delete text. The argument is a string with the deletion offset and
+the number of runes to delete.
+.PP
+.I Tag
+is an editable single-line text panel.
+.PP
+.I Label
+is a read-only fixed-size tag. By default, the text of the label matches
+its name (without the type prefix). The data file can be used to change this.
+.PP
+.I Button
+is a label that sends execution events for both
+.I look
+and
+.I execute
+requests (mouse buttons 2 and 3).
+.PP
+.I Gauge
+shows a numeric value between 0 and 100 using a graphical representation
+of a gauge.
+.PP
+.I Slider
+is a gauge than can be adjusted by the user using the left button.
+.PP
+.I Draw
+is a graphical panel for vector graphics. It draws the commands contained
+in its data file. Currently,
+.I draw
+knows the following commands:
+.EX
+	ellipse cx cy rx ry [col]
+	rect x0 y0 x1 y1 col
+	line x0 y0 x1 y1 n col
+.EE
+They are similar to those in
+.IR draw (2).
+The control file reports the size as in images.
+.SS Attributes and control requests
+The following attributes are common among panels and can be found in their
+.B ctl
+files, or changed by a write to them:
+.TP
+.B "tag
+activates a tag for the panel.
+.TP
+.B "notag
+deactivates it.
+.TP
+.B "hide
+hides the panel,
+.TP
+.B show
+undoes this.
+.TP
+.B "dirty
+flags the panel as dirty (unsaved changes).
+.TP
+.B clean
+does the opposite.
+.TP
+.B "font \fIF\fP
+changes the font to
+.IR F .
+The argument can be
+.B T
+for teletype font,
+.B  R
+for variable width (e.g. roman),
+.B B
+for bold-face,
+.B S
+for small,
+and
+.B L
+for large. There is no way to select a particular font; this is not a bug,
+but a feature.
+.TP
+.B hold
+requests
+.I omero
+to ignore changes within the panel with respect to screen layout. The panel
+(and inner ones) are held until the control file is closed. This is useful to ask
+for several requests while trying to avoid unnecessary resizes in the middle.
+.TP
+.B "addr \fInetaddr\fP
+tells
+.I omero
+that the application in charge of a panel can be reached at
+.I netaddr
+and asks for any further event to be sent to such address.
+Events are textual and consist of the path for the affected
+panel, the event name, an optional argument and the
+ASCII 001 character. The
+.IR omero (2)
+library is usually in charge of handling events in the application
+side.
+.TP
+.B "min
+Minimizes the panel (only for rows and columns). This sets the number
+of non-hidden inner panels to one.
+.TP
+.B "nomin
+undoes the effect of the previous request.
+.SS Events
+Panels can be programmed (via
+their
+.B ctl
+files) with the network address of their application.
+.I Omero
+sends relevant interface events to the address of the application associated to
+each panel. Events are separated by the ASCII 001, to permit multi-line events.
+Each event has the path (in the file system) of the panel generating it, the name
+of the event (a string), and a optional string argument.
+.I Omero
+can send any of the following events:
+.TP
+.B "look \fIarg\fP
+the user is looking for
+.IR arg .
+For example, the user did  click the right mouse button in the panel.
+The argument has a number printed with
+.B %11d
+with the length of the look string, and the string itself.
+.TP
+.B "click \fIarg\fP
+There was a mouse event. The argument is the mouse event in the format of
+.IR mouse (3).
+.TP
+.B "keys \fIarg\fP
+The keys corresponding to the runes in
+.I arg
+were pressed.
+.TP
+.B "interrupt
+The interrupt key (Delete)
+was pressed.
+.TP
+.B "exec \fIarg\fP
+The user is requesting to run
+.IR arg .
+The argument has the same format used for
+.BR look .
+.TP
+.B "args \fIarg\fP
+The user is requesting to run
+.IR arg
+using the contents of the current selection as
+an argument. To locate the current selection,
+.I omero
+places in
+.B /dev/sel
+the path of the last panel where text was selected. Its
+.B ctl
+and
+.B data
+files can be used to retrieve the selected string.
+The event argument has the same format used for
+.BR look .
+.TP
+.B "data \fIarg\fP
+The data associated with the panel (eg., the value of a slider) was changed.
+For gauges and sliders, the value follows. 
+.TP
+.B "ins \fIarg\fP
+Text (as shown in the argument) has been inserted in a text panel.
+The argument contains the position, number of runes, and the text
+itself.
+.TP
+.B "del \fIarg\fP
+Text has been deleted from the text panel. The argument is like before.
+.TP
+.B "addr \fIarg\fP
+The panel has been created within the given volume. The argument names
+the volume. The application uses this event to track down which interfaces
+it has and where are them. Usually, by means of
+.IR omero (2).
+.TP
+.B "path \fIarg\fP
+The panel has been moved to a new path. The argument is the new path name.
+.TP
+.B "dirty
+The user edited the panel using the mouse/keyboard interface.
+.TP
+.B "exit
+The panel is terminated (perhaps by using the
+.B Del
+command through the user interface).
+When using
+.IR omero (2),
+the application is notified when the last replica of the panel exits.
+.SH SOURCE
+.B /sys/src/cmd/omero
+.SH "SEE ALSO"
+.IR omero (1),
+.IR ox (1),
+and
+.IR omero (2).
+.SH BUGS
+There is no way to replicate a panel within the a single container,
+there may be only one file with a given name. Besides,
+this service is young, there may be some other bugs. All the comunication
+is plain text and thus can be eavesdropped. Some support for encryption
+should be added.
+
+

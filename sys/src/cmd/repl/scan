@@ -1,0 +1,24 @@
+#!/bin/rc
+
+fn usage {
+	echo 'usage: repl/scan repl' >[1=2]
+	exit usage
+}
+if (~ $#1 0 || ~ $1 -*)
+	usage
+
+if (test -x $1)
+	. $1
+if not
+	if (test -x $home/lib/repl/$1)
+		. $home/lib/repl/$1
+	if not {
+		if (test -x /lib/repl/$1)
+			. /lib/repl/$1
+		if not {
+			echo 'no such replica: '^$1 >[1=2]
+			exit bad1
+		}
+	}
+
+repl/scandb -v $excl $dir $db

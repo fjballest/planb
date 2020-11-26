@@ -1,0 +1,229 @@
+.TH REPL 8
+.SH NAME
+prune, scandb, syncdb \- peer to peer replica management
+.SH SYNOPSIS
+.B repl/prune
+.IR repl ...
+.br
+.B repl/scandb
+[
+.B -tv
+]
+[
+.B -p
+.I nb
+]
+[
+.B -n
+.I id
+]
+[
+.B -r
+.I replid
+]
+[
+.B -i
+.I excldir
+]
+.I dir
+.I db
+.br
+.B repl/syncdb
+[
+.B -12lnrv
+]
+.I dir1
+.I dir2
+.I db1
+.I db2
+[
+.IR dir ...
+]
+.SH DESCRIPTION
+These programs implement a peer-to-peer replica management system
+for file trees. Each peer is called a replica and holds both the
+replicated file tree and a data base. The data base contains
+a textual representation of the file tree together with the history
+of updates for each file as described below.
+Any number of replicas can be defined and
+any pair can be synchronized at any time. There is no centralized
+server nor there is a synchronization order required to detect
+conflicts.
+.PP
+Replication is done using causal histories as defined by Lamport.
+Each file entry in the data base holds
+a history of change events.
+When a replica creates, changes, or deletes
+a file, a change event is added
+to the file's history. A change event is a single character
+that identifies the replica that did the change. The character is
+lower case for creation, data changes, and metadata changes. The
+character is upper case for deletion events.
+.PP
+To synchronize a file between two replicas, their histories for
+the file are compared. The file is considered
+up to date if the histories are equal. If one of them is a prefix of the
+other, it is considered out of date with respect to the other. In this
+case the file and its history are updated in the other replica. If the
+histories differ, but no one is a prefix of the other, there was
+a concurrent update and a conflict is reported.
+.PP
+.I Scandb
+is used to scan the file tree at
+.I dir
+for changes. It builds a new data base that corresponds to the
+tree in disk and compares it with
+.IR db .
+The program prunes from the scan process any directory not modified
+since the last scan performed. Flag
+.B -t
+disables such prunning and is intended for use in file systems
+that do not propagate modification times from the changed file
+up to the root directory of the file system.
+.PP
+The history for a file in the new data base is that found in
+.I db
+perhaps followed by a change event (when the file has changed).
+.PP
+Option
+.B -n
+can be used when there is no
+.I db
+file. This happens when defining a new replica.
+The option argument is the name for the replica and must be a lower
+case letter. The change histories in the new data base
+will contain a single event (a change in the replica being defined).
+.PP
+Option
+.B -r
+can be used to define a new replica with name
+.I replid
+while creating an initial data base for name
+.IR id .
+This is useful to build a data base for an already updated
+replica that has been copied by other means. See the example below.
+.PP
+Flag
+.B -v
+makes the program verbose. It will report any change event noticed.
+.PP
+To ignore a directory give its name to option
+.B -i
+using an relative path name starting at the replica directory.
+The directory contents will be ignored. The option can be used
+multiple times to ignore multiple directories. Be careful to
+give the
+.B same
+ignore arguments to all the replicas.
+.PP
+To prune the history, you can use
+.B -p
+and pass the identifier (a number) for the prune event. Such identifier
+must be used at all the replicas. See the discussion below.
+.PP
+.I Syncdb
+is used to synchronize replicas. Its arguments are the two
+directories and data bases for the replicas being synchronized.
+.I Syncdb
+operates as said above to detect updates and conflicts. It copies,
+creates, and deletes files to bring both replicas to a synchronized
+state. If any
+.I dir
+is supplied, relative to the top-dir of a replica, synchronization applies only to it.
+.PP
+Flag
+.B -v
+makes the program report any change made. Flag
+.B -n
+performs a dry run to report changes between both replicas
+without synchronizing them.
+The flag
+.B -l
+can be used to syncrhonize just the left replica (in command line
+order) with respect to the other. Flag
+.B -r
+does the same for the right replica.
+.PP
+Flags
+.B -1
+and
+.B -2
+can be used to resolve conflicts in favor of the first replica (the left one)
+and in favor of the second one (the right one).
+When there are different conflicts to be gained by different replicas,
+one replica can be updated by hand, and then used as the prefered to
+settle down all the conflicts.
+.PP
+To prune file histories follow this procedure.
+.IP 1
+Be sure that all the peers are synchronized.
+.IP 2
+Use
+.I prune
+to prune all the peers. You can pass the names for all the
+.I repl
+configuration files.
+.LP
+This program calls
+.I scandb
+for each replica using the
+.B -p
+flag. The effect is
+to remove all but the last event in the histories for files within the database.
+Any other procedure would be very costly or complex,
+because it would require finding the maximum common prefix for each
+history and removing it from all the replicas.
+.PP
+Database files are exclusive-open text files that contain the replica
+identifier in the first line, followed by one line per file entry.
+Each entry contains the file name, the update history,
+the user and group identifers, file permissions (8 hex digits),
+modification
+time (8 hex digits), file length (decimal), and Qid version. The file name
+starts with '/' and is relative
+to the top directory of the replicated file tree. All fields are separated
+by space. Entries for deleted files have their history terminated on uppercase.
+.SH EXAMPLE
+This defines for the system file tree, excluding
+.B /usr
+and
+.BR /dist ,
+a replica called
+.BR a .
+The same is done for
+.B /usr/nemo
+excluding the directory
+.B /usr/nemo/dist
+and
+.BR /usr/nemo/tmp .
+.EX
+	; repl/scandb -n a -i usr -i dist /root /dist/sys.db
+	; repl/scandb -n a -i tmp -i dist $home $home/dist/home.db
+
+.EE
+.LP
+.LP
+Now we can replicate both the system and
+.B /usr/nemo
+into a new laptop by defining two replicas,
+named
+.BR b ,
+and synchronizing them.
+.EX
+	# at the laptop, booted from the network.
+	; mount -c /dev/sdC0/fossil /n/fossil
+	; repl/scandb -n b /n/fossil /dist/nautilus.db
+	; replica/syncdb /root /fossil /dist/sys.db /dist/nautilus.db
+	; mkdir /fossil/$home /fossil/$home/dist
+	; repl/scandb -n b -i tmp -i dist /fossil/$home $home/dist/laptop.db
+	; replica/syncdb (/ /fossil)^$home $home/dist/^(home.db laptop.db)
+
+.EE
+.SH SOURCE
+.B /sys/src/cmd/repl
+.SH SEE ALSO
+.IR repl (1),
+.IR replica (1).
+.SH BUGS
+Append only files are not synchronized to prevent duplication
+of file contents.

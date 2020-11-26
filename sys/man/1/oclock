@@ -1,0 +1,17 @@
+.TH OPLAYER 1
+.SH NAME
+oclock \- Omero analog clock interface
+.SH SYNOPSIS
+.B oclock
+[
+.B -d
+]
+.SH DESCRIPTION
+.I Oclock
+is a program that provides an analog clock for
+.IR omero (1).
+Besides interface replication and destruction, there is no user interaction.
+.SH SOURCE
+.B /sys/src/cmd/oclock.c
+.SH "SEE ALSO"
+.IR omero (1)

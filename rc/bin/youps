@@ -1,0 +1,9 @@
+#!/bin/rc
+# Don't edit this. edit /sys/src/cmd/youps/youps.rc instead,
+# and then	cp /sys/src/cmd/youps/youps.rc /rc/bin/youps
+{ ps | grep portfs >/dev/null} || portfs $*
+mount -c /srv/vol /mnt/plumb '-T /mnt/plumb sys='^$sysname
+touch /mnt/plumb/^(edit exec) >[2]/dev/null
+mount -a /srv/vol /mnt/plumb '-TU /mnt/plumb user='^$user^' loc='^$location
+sendfs
+

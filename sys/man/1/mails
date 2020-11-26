@@ -1,0 +1,148 @@
+.TH MAILS 1
+.SH NAME
+Mails, mail2fs, Arch, Save, Reply \- reading and processing mail
+.SH SYNOPSIS
+.B mail2fs
+[
+.B -D
+]
+[
+.B -n
+]
+[
+.B -d
+.I dir
+]
+[
+.I mbox
+]
+.PP
+.B Mails
+[
+.B -alsA
+]
+[
+.I mbox
+]
+.PP
+.B Save
+.I mbox
+.PP
+.B Arch
+.PP
+.B Reply
+[
+.I addr
+]
+.SH DESCRIPTION
+These programs cooperate to provide mail processing and reading facilities for
+Plan B users. They are an alternative to programs mentioned in
+.IR mail (1).
+.PP
+In Plan B, mails for users are parsed and decoded first,
+and then stored in a file hierarchy where these and other
+tools can be used to process them.  A mailbox is a directory, usually under
+.BR /mail/box/$user/ ,
+that contains one directory per month (e.g.,
+.BR 200603/
+for mails processed on March 2006).  In these diretories, there is one directory per message. The
+convention is that (message directory) names starting with
+.B a.
+correspond to archived messages not to be usually shown to the user. Names starting with
+.B s.
+correspond to messages that seem to be spam (not usually shown either). Other messages use a
+serial message number as their directory name.
+.PP
+The directory for a message contains a
+.B text
+file (with the mail headers and body already processed for reading)
+and one extra file for each (file) attachment found in the original
+message (when a mail is attached, a directory is created for it following the same conventions
+mentioned here).
+Because all these files have been already processed for reading,
+the usual file handling tools can be used to operate on them (e.g., editors, file search
+tools, etc.). 
+.PP
+.B Mails
+is an
+.IR rc (1)
+script that provides the primary user interface. Option
+.B -l
+lists message paths and sender addresses in a format suitable for use with
+.IR ofaces (1).
+.PP
+In general
+.I Mails
+relies on
+.I mails
+to perform its job and extract from the text of the messages in
+.I mbox
+(by default,
+.B /mail/box/$user/mails
+) a summary of messages including their relative path, their subject, and
+their sender. This text summary is plumbed to the user's editor. The
+.I mails
+program is the underlying tool. The description below applies to either programs.
+.PP
+Flag
+.B -a
+shows archived  messages also. Flag
+.B -s
+shows spam messages also. Flag
+.B -A
+shows all of them.
+.PP
+The program that actually performs the conversion from UNIX/Plan9 mailbox format into
+plan B mail folders is
+.IR mail2fs .
+It reads
+.I mbox
+(or
+.B /mail/box/$user/mbox
+by default) and updates
+.B /mail/box/$user/mails
+(or
+.I dir
+when given) with messages found in the Plan 9 mailbox. Once the conversion finishes, the original mailbox
+is emptied, unless flag
+.B -n
+is supplied. The program computes the SHA1 digest of subjects and bodies,
+to silently discard duplicate mails.
+.PP
+.BR Save ,
+and
+.B Arch
+are
+.IR rc (1)
+scripts that can be used when reading mail with
+.IR ox (1)
+to save a mail to a different folder and to archive the mail. They must be executed
+from the
+.I ox
+panel that shows the mail file. 
+.PP
+.I Reply
+is another script used both to compose new mails and to reply. It starts
+.IR omail (1)
+to compose a new mail, using the optional destination mail
+.I addr
+when given. The snarf buffer is set to the context of the
+.I ox
+window used to execute the command, which is useful to paste the original
+message when replying.
+.SH FILES
+.TF /mail/box/$user/mbox
+.TP
+.B /mail/box/$user/mbox
+Standard Plan 9 mail box for the user.
+.TP
+.B /mail/box/$user/mails/
+Standard Plan B mail box for the user
+.SH SOURCE
+.B /sys/src/cmd/mail2fs
+.SH SEE ALSO
+.IR ox (1)
+.br
+.IR mail (1)
+.br
+.IR omail (1)

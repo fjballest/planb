@@ -1,0 +1,13 @@
+</$objtype/mkfile
+
+TARG=fs gui power ox10
+BIN=/$objtype/bin/x10
+#BIN=$home/bin/$objtype/
+
+SCRIPTS=Gui
+OFILES=
+HFILES=x10.h
+
+</sys/src/cmd/mkmany
+
+$O.fs: fs.$O main.$O x10.$O

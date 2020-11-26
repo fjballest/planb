@@ -1,0 +1,249 @@
+#This is Plan B 4th edition.
+#Most of it is Plan 9 from Bell Labs 4th edition
+#taken verbatim.  The system has been changed and includes technology
+#from Plan B 2nd and 3rd edition.
+
+
+# patches to be sent:
+#	/sys/src/cmd/fmt.c /sys/man/1/fmt : be nice with troff autofmt
+#	/sys/include/9p.h	/sys/src/lib9p/srv.c	missing function header and slow9p
+#	/sys/src/lib9p/file.[ch]	split file interface
+#	/sys/lib/plumb/fileaddr	add $url
+#	/sys/man/3/mouse		document scrollswap
+#	/sys/src/cmd/aux/clog.c	add machine name
+#	/sys/src/cmd/aux/listen1.c	missing exits
+#	/sys/src/cmd/fossil/file.c	propagate qid.vers change
+#	/sys/src/cmd/ns.c		parsing for multiword attach specs
+#	/sys/src/lib{c,draw} below	missing malloc tags and frees
+
+# changes kept just for us:
+#	changes for printed and html manual
+#	changes in boot to recognize bfs partition (deprecated)
+#	/sys/src/9/mkfile and /sys/src/9/pc/mkfile	sys/src/boot/mkfile skipt what we don't have
+#	/sys/src/mkfile /sys/src/cmd/mkfile ignore several things, compile extra things
+#	/sys/src/9/pc/mmu.c	don't panic if don't have to.
+#	/sys/src/9/pc/pc*	various local config files
+#	/sys/src/cmd/aux/clog.c	add machine name
+#	/sys/src/cmd/aux/reboot.c	favor reboots to hangs
+#	/sys/src/cmd/history.c	adjust for planb setup
+#	/sys/src/cmd/aux/listen1	missing exits
+#	/sys/src/cmd/exportfs	extra safety checks
+#	/rc/bin 9fs/termrc/cpurc/doctype	keep our local stuff
+#	/rc/bin/fshalt		extra safety checks
+#	All these commands:
+#		aplay art bdf2subf bib bib2ref check gofer
+#		links lock mahjongg mandel mfaces morse  rae
+#		sherlock slider spline tag tra ttf2subf  cifs drvfs
+#		fsreboot trfs acd bargraph.c bdf bprolog cdplay 
+#		fontshow freetype galaxy.c  gofer gpic ip/httpd/get
+#		i irc7 ircc ktrans lame mad mpeg3play  paint palm
+#		photopc srvstyx tex unix/plumbsrv usb/mimio utftex
+#		oban ojuggle caps dformat mem ssam stack slider volume
+
+/386/bin/acme
+/386/bin/adsrv
+/386/bin/bns
+/386/bin/hxfs
+/386/bin/ip/httpd/group
+/386/bin/ip/httpd/notas
+/386/bin/ip/ipconfig
+/386/bin/kbdfs
+/386/bin/mail2fs
+/386/bin/mails
+/386/bin/manviewer
+/386/bin/mfs
+/386/bin/mousefs
+/386/bin/ndb/ccs
+/386/bin/ndb/dns
+/386/bin/ns
+/386/bin/oclock
+/386/bin/ofaces
+/386/bin/omail
+/386/bin/omero
+/386/bin/oplayer
+/386/bin/oposter
+/386/bin/oscreen
+/386/bin/ostats
+/386/bin/ovols
+/386/bin/ox
+/386/bin/pager
+/386/bin/plumb
+/386/bin/poll
+/386/bin/portfs
+/386/bin/ramfs
+/386/bin/repl
+/386/bin/rio
+/386/bin/sam
+/386/bin/sendfs
+/386/bin/vncs
+/386/bin/x10
+/386/lib/lib9p.a
+/386/lib/libavl.a
+/386/lib/libb.a
+/386/lib/libc.a
+/386/lib/libdraw.a
+/386/lib/liberror.a
+/386/lib/libomero.a
+/NOTICE.PlanB
+/README.PlanB
+/lib/namespace.planb
+/lib/ndb/common.planb
+/lib/ndb/mobile/machine
+/lib/ndb/vol/vols
+/lib/repl
+/rc/bin/Arch
+/rc/bin/Del
+/rc/bin/Mails
+/rc/bin/Ocp
+/rc/bin/Reply
+/rc/bin/Spam
+/rc/bin/Spam+
+/rc/bin/Spam-
+/rc/bin/bfs
+/rc/bin/binstall
+/rc/bin/brc
+/rc/bin/ego
+/rc/bin/env
+/rc/bin/msgs
+/rc/bin/ohist
+/rc/bin/oimage
+/rc/bin/speak
+/rc/bin/speaksrvstd
+/rc/bin/tell
+/rc/bin/vols
+/rc/bin/youps
+/sys/doc/papers/3e/3e11.ps
+/sys/doc/papers/3eov/3eov.pdf
+/sys/doc/papers/omero/omero11.ps
+/sys/games/lib/ego
+/sys/games/lib/fortunes.urjc
+/sys/include/9p.h
+/sys/include/avl.h
+/sys/include/b.h
+/sys/include/error.h
+/sys/include/omero.h
+/sys/lib/bmac
+/sys/lib/dist/planb
+/sys/lib/hxconf
+/sys/lib/newuser
+/sys/lib/plumb/fileaddr
+/sys/lib/plumb/planb
+/sys/lib/tmac/logols.ps
+/sys/lib/tmac/tmac.anb
+/sys/lib/tmac/urjc.eps
+/sys/lib/x10conf.victim
+/sys/man/1/ego
+/sys/man/1/faces
+/sys/man/1/fortune
+/sys/man/1/jpg
+/sys/man/1/kill
+/sys/man/1/mails
+/sys/man/1/manviewer
+/sys/man/1/oclock
+/sys/man/1/ofaces
+/sys/man/1/ohist
+/sys/man/1/oimage
+/sys/man/1/omail
+/sys/man/1/omero
+/sys/man/1/oplayer
+/sys/man/1/oscreen
+/sys/man/1/ostats
+/sys/man/1/ovols
+/sys/man/1/ox
+/sys/man/1/pager
+/sys/man/1/planb
+/sys/man/1/poll
+/sys/man/1/repl
+/sys/man/1/tell
+/sys/man/1/vols
+/sys/man/1/x10
+/sys/man/2/avl
+/sys/man/2/error
+/sys/man/2/omero
+/sys/man/2/readf
+/sys/man/3/mouse
+/sys/man/4/bns
+/sys/man/4/hxfs
+/sys/man/4/mfs
+/sys/man/4/mousefs	
+/sys/man/4/omero
+/sys/man/4/planb
+/sys/man/4/portfs
+/sys/man/4/ramfs
+/sys/man/4/x10
+/sys/man/6/cnstr
+/sys/man/6/keyboard
+/sys/man/6/ndb
+/sys/man/8/adsrv
+/sys/man/8/bfs
+/sys/man/8/binstall
+/sys/man/8/booting
+/sys/man/8/brc
+/sys/man/8/env
+/sys/man/8/httpd
+/sys/man/8/ndb
+/sys/man/8/newuser
+/sys/man/8/repl
+/sys/src/NOTICE
+/sys/src/README.PlanB
+/sys/src/cmd/acme/acme.c
+/sys/src/cmd/adsrv.c
+/sys/src/cmd/auth/lib/mkfile
+/sys/src/cmd/auth/none.c
+/sys/src/cmd/bns
+/sys/src/cmd/hxfs.c
+/sys/src/cmd/ip/httpd/article.c
+/sys/src/cmd/ip/httpd/group.c
+/sys/src/cmd/ip/httpd/mkfile
+/sys/src/cmd/ip/httpd/notas.c
+/sys/src/cmd/ip/ipconfig.c
+/sys/src/cmd/kbdfs.c
+/sys/src/cmd/mail2fs
+/sys/src/cmd/manviewer.c
+/sys/src/cmd/mfs.c
+/sys/src/cmd/mousefs.c
+/sys/src/cmd/ndb/ccs.c
+/sys/src/cmd/ndb/dns.c
+/sys/src/cmd/ndb/mkfile
+/sys/src/cmd/ns.c
+/sys/src/cmd/oclock.c
+/sys/src/cmd/ofaces.c
+/sys/src/cmd/omail
+/sys/src/cmd/omero
+/sys/src/cmd/oplayer.c
+/sys/src/cmd/oposter.c
+/sys/src/cmd/oscreen.c
+/sys/src/cmd/ostats.c
+/sys/src/cmd/ovols.c
+/sys/src/cmd/ox
+/sys/src/cmd/pager.c
+/sys/src/cmd/poll.c
+/sys/src/cmd/ramfs.c
+/sys/src/cmd/repl
+/sys/src/cmd/rio/rio.c
+/sys/src/cmd/rio/wind.c
+/sys/src/cmd/sam/io.c
+/sys/src/cmd/sam/mesg.c
+/sys/src/cmd/sam/xec.c
+/sys/src/cmd/unix/README
+/sys/src/cmd/unix/ksrv
+/sys/src/cmd/unix/msrv
+/sys/src/cmd/vnc/devmouse.c
+/sys/src/cmd/x10
+/sys/src/cmd/youps
+/sys/src/lib9p/file.c
+/sys/src/lib9p/file.h
+/sys/src/libavl
+/sys/src/libb
+/sys/src/libc/fmt/smprint.c
+/sys/src/libc/fmt/vsmprint.c
+/sys/src/libc/port/strdup.c
+/sys/src/libdraw/subfontname.c
+/sys/src/liberror
+/sys/src/libomero
+/what/sargazos
+/what/whale
+/where/129
+/where/136
+/who/mero
+/who/nemo

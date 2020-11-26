@@ -1,0 +1,61 @@
+#!/bin/rc
+# do not edit. Edit /sys/src/cmd/mail2fs/Spam instead.
+#
+TMP=/tmp/spam.$sysname.$pid
+PATTERNS=/mail/box/$user/patterns
+fn isspam @{
+	
+	if (test -e $1/text){
+		{
+			echo '# hash table'
+			cat $1/text | upas/msgtok |
+				grep -v '^....................(.*)	' |
+				sed 's/$/	1/'
+		} >$TMP.tok
+		x=`{upas/bayes -k _prof.mbox _prof.spam ~ $TMP.tok}
+		where=$x(1)
+		prob=$x(2)
+		if (~ $where *spam*)
+			status=''
+		if not
+			status='not spam'
+	}
+	if not
+		status='not spam'
+	
+}
+
+fn isblocked @{
+	if (test -e $PATTERNS && grep -isf $PATTERNS $1/text ){
+		status=''
+	}
+	if not
+		status='not spam'
+
+}
+
+if (~ $#* 2 && ~ $1 -f){
+	m=$2
+	nm=`{echo $m | sed 's|(.*)/([as]\.)?(.*)|\1/s.\3|'}
+	mv $m $nm ; chmod +t $nm
+	exit ''
+}
+
+if (~ $#* 0)
+	mails=`{echo */[0-9]*}
+if not
+	mails=$*
+cwd=`{pwd}
+mails=$cwd/^$mails
+cd /mail/box/$user
+for (m in $mails){
+	if (isblocked $m){
+		echo Spam -f $m
+	}
+	if not {
+		if (isspam $m){
+			echo Spam -f $m
+		}
+	}
+}
+exit ''

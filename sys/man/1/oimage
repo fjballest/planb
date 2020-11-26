@@ -1,0 +1,25 @@
+.TH OIMAGE 1 
+.SH NAME
+oimage \- display a image file in omero
+.SH SYNOPSIS
+.B oimage
+[
+.B -i
+]
+.I image
+.B ...
+.SH DESCRIPTION
+.I Oimage
+shows the named image(s) in
+.IR omero (1),
+using a page panel by default. The panel used is
+.B image
+if flag
+.B -i
+is given.
+.SH SOURCE
+.B /rc/bin/oimage
+.SH SEE ALSO
+.IR jpg (1)
+.br
+.IR omero (1)

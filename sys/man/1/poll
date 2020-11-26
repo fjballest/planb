@@ -1,0 +1,38 @@
+.TH POLL 1
+.SH NAME
+poll \- poll files for changes
+.SH SYNOPSIS
+.B poll
+[
+.B -1
+]
+[
+.B -i
+.I ival
+]
+.I cmd
+.I file...
+.SH DESCRIPTION
+.I Poll
+monitors
+the given files each
+.I ival
+seconds (one by default) and runs
+.I cmd
+when any of the files change. It uses
+.IR fstat (2)
+to generate a single
+.IR stat (5)
+request for each poll and file. If
+.B -1
+is given, the program exits after the first change
+noticed; otherwise, it keeps on polling the files.
+.PP
+The command is assumed to be at
+.B /bin
+and is executing using the list of files as arguments.
+.PP
+.SH SOURCE
+.B /sys/src/cmd/poll.c
+.SH SEE ALSO
+.IR du (1)

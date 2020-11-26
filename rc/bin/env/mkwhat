@@ -1,0 +1,23 @@
+#!/bin/rc
+# Creates a resonable /what for this machine using ramfs
+# and updates the machine context.
+
+rfork e
+xmax=`{echo $vgasize | sed 's/x[0-9x]*//'}
+ymax=`{echo $vgasize | sed -e 's/[0-9]*x//' -e 's/x[0-9x]*//g'}
+if (! test -e /n/what/$sysname){
+	ramfs -n 'tcp!*!11003' -m /n/what -V /what
+	mkdir /n/what/$sysname
+	bind -b /n/what /what
+}
+echo $user > /what/$sysname/owner
+if (test -w /who/$user/where)
+	echo $location > /who/$user/where
+echo $location > /what/$sysname/where
+if (~ $service terminal)
+	echo other >/what/$sysname/role
+if not
+	echo server >/what/$sysname/role
+echo 0 0 $xmax $ymax >/what/$sysname/vgasize
+
+exit ''

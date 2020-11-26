@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/whale/dist/repl/aprof.db
+dir=/n/whale/usr/prof
+excl=()

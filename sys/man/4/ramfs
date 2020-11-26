@@ -1,0 +1,83 @@
+.TH RAMFS 4
+.SH NAME
+ramfs  \- memory file system
+.SH SYNOPSIS
+.B ramfs
+[
+.B -abcAD
+]
+[
+.B -s
+.I srv
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -n
+.I addr
+]
+[
+.B -V
+.I volspec
+]
+.SH DESCRIPTION
+.I Ramfs
+services a ram file system for temporary and volatile files. By default,
+.I ramfs
+mounts itself at
+.BR /tmp .
+Option
+.B -m
+can be used to mount it at
+.I mnt
+instead. Flags
+.B -abc
+mount after, before, and allowing file creation, as
+.IR mount (2)
+describes.
+.PP
+In the same way, options
+.B -s
+and
+.B -n
+request the server to register
+.I srv
+with
+.IR srv (3)
+and to listen for clients
+at network address
+.IR addr .
+Clients are authenticated via
+.IR factotum (4)
+unless flag
+.B -A
+is given or the client connects from the local machine.
+.PP
+This program is useful as a volatile place holder of
+information that must be exported to the network in
+a secure way. It is a good candidate to place on it
+synthetized and context information for others to know.
+.PP
+The
+.B -V
+option makes
+.I ramfs
+announce the volume with the given
+.I volspec
+and appropriate default constraints for the user name, system name, and
+location.
+.PP
+The
+.B -D
+flag shows 9P messages sent and received, for diagnostics.
+.PP
+In gereral, the options related to Plan B file servers for volumes are described
+in
+.IR planbfs (4)
+and have the same meaning in this and other file servers developed for Plan B.
+.SH SOURCE
+.B /sys/src/cmd/ramfs.c
+.SH SEE ALSO
+.IR planbfs (4).

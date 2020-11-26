@@ -1,0 +1,5 @@
+msrv is a server for the mouse similar to mousefs only it is just a sink of events.
+To be compiled it needs libtst-dev and xlibs-dev and p9ports at least.
+The X must suport test extensions.
+It runs standalone unless authentification is required. Then
+it needs the p9ports factotum.

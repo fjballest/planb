@@ -1,0 +1,73 @@
+#!/bin/rc
+# Update environment information with what we know.
+# Scan for user location and other std context.
+# Users are expected to customize this as they see it fits.
+
+# Each function can be used separately. First, functions
+# extracting location and status are used, then functions
+# taking appropriate actions.
+
+bfs /devs/x10
+bfs /devs/hx
+
+fn visits {
+	visit=`{cat /devs/x10/visit:$location >[2]/dev/null}
+	if (~ $#visit 0 )
+		visit=no
+	if (~ $visit on )
+		visit=yes
+	if (~ $visit off )
+		visit=no
+	echo $visit >/where/$location/visit
+}
+
+fn locate {
+	if (test -e $home/ohist && ! test $home/ohist -older 10m )
+		uloc=$location
+	if not {
+		uloc=`{cat /devs/hx/$user >[2]/dev/null}
+		if (~ $#uloc 0)
+			uloc=none
+	}
+	echo $uloc >/who/$user/where
+}
+
+fn setstatus {
+	uvisit=`{cat /where/$uloc/visit >[2]/dev/null}
+	if (~ $#uvisit 0)
+		uvisit=no
+	if (~ $uvisit yes on)
+		sts=busy
+	if not {
+		if ( ~ $uloc none)
+			sts=away
+		if not
+			sts=online
+	}
+	echo $sts >/who/$user/status
+}
+
+fn updateweb {
+	# Update nemo's web
+	switch($sts){
+	case away
+		x10nemo='I am not at my office right now'
+	case online
+		x10nemo='I am at my office room right now and nobody is visiting.'
+	case busy
+		x10nemo='I am at my office room right now and somebody else is visiting.'
+	}
+	SEP='x10 generated'
+	echo $x10nemo | /usr/nemo/bin/rc/chsec \
+		$home/doc/www/INDEX.html > $home/doc/www/index.html
+}
+
+
+while(;){
+	visits		# see if they are visiting
+	locate		# locate the user
+	setstatus	# determine his status
+	updateweb	# update his web page.
+	sleep 30
+}
+

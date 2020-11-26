@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/fossil/dist/repl/lplanb.db
+dir=/n/fossil/usr/planb
+excl=()

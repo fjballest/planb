@@ -1,0 +1,26 @@
+#!/bin/rc
+
+if (! test -r $home/ohist){
+	echo no history file
+	exit nohistory
+}
+
+all=no
+if (~ $1 -a){
+	all=yes
+	shift
+}
+
+app=ox
+if (! ~ $#* 0){
+	app=$"*
+}
+
+if (~ $all yes){
+	grep '^'^$"app $home/ohist
+}
+if not{
+	grep '^'^$"app $home/ohist | tail -1
+}
+
+exit ''

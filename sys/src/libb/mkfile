@@ -1,0 +1,34 @@
+</$objtype/mkfile
+
+LIB=/$objtype/lib/libb.a
+OFILES=\
+	createf.$O\
+	readf.$O\
+	writef.$O\
+	readfstr.$O\
+	writefstr.$O\
+	announcevol.$O\
+	cmdoutput.$O\
+	tcmdoutput.$O\
+
+HFILES=/sys/include/b.h
+
+UPDATE=\
+	mkfile\
+	$HFILES\
+	${OFILES:%.$O=%.c}\
+	${LIB:/$objtype/%=/386/%}\
+
+</sys/src/cmd/mksyslib
+
+progs:V:
+	cd /sys/src/cmd
+	for (p in hxfs kbdfs mfs mousefs ramfs) {
+		mk $p.install ; mk $p.clean
+	}
+	for (d in x10 youps omero) @{
+		echo mk $d
+		cd $d
+		mk -a install ; mk clean
+		cd ..
+	}

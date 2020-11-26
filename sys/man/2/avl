@@ -1,0 +1,93 @@
+.TH AVL 2
+.SH NAME
+mkavltree, insertavl, lookupavl, deleteavl, avlwalk, avlnext, avlprev \- AVL trees
+.SH SYNOPSIS
+.B #include <u.h>
+.br
+.B #include <libc.h>
+.br
+.B #include <avl.h>
+.PP
+.B
+typedef struct Avl	Avl;
+.br
+.B
+typedef struct Avltree	Avltree;
+.br
+.B
+typedef struct Avlwalk	Avlwalk;
+.PP
+.B
+Avltree	*mkavltree(int(*cmp)(Avl*, Avl*));
+.PP
+.B
+void	insertavl(Avltree *tree, Avl *new, Avl **oldp); 
+.PP
+.B
+Avl *lookupavl(Avltree *tree, Avl *key);
+.PP
+.B
+void deleteavl(Avltree *tree, Avl *key, Avl **oldp);
+.PP
+.B
+Avlwalk *avlwalk(Avltree *tree);
+.PP
+.B
+Avl *avlnext(Avlwalk *walk);
+.PP
+.B
+Avl	*avlprev(Avlwalk *walk);
+.PP
+.B
+void endwalk(Avlwalk *walk);
+.PP
+.SH DESCRIPTION
+These routines manage in-memory databasea stored as self-balancing AVL trees. 
+Each node in the tree is supposed to contain a
+.B Avl
+structure. The tree is created by a call to
+.I mkavltree
+supplying a function to compare two nodes.
+.PP
+Nodes can be added to the tree by calling
+.I insertavl
+using the
+.I Avltree
+returned by
+.I mkavltree
+and the node to insert. They are removed by
+.I deleteavl
+and giving as
+.I key
+a node used as a key to locate the node to be deleted. The routine
+returns in
+.I oldp
+a node to be released by the user.
+.PP
+Entries can be searched by calling
+.I lookupavl
+and giving a example node that is used as the search key.
+.PP
+Iteration over the nodes is provided by
+.I avlwalk
+(which creates a new iterator),
+.I avlnext
+(which returns a new node, in order, each time called),
+and
+.I endwalk
+(which releases the iterator). The
+function
+.I avlprev
+moves backwards in the iteration order, determined by the compare function given to
+.IR mkavltree.  
+.SH SOURCE
+.B /sys/src/libavl
+.SH SEE ALSO
+Lewis & Denenberg,
+.I "Data Structures and Their Algorithms" .
+.SH HISTORY
+These functions were extracted from
+.IR replica (8)
+programs to be used also in
+.IR repl (8)
+and other tools.

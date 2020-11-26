@@ -1,0 +1,16 @@
+.TH EGO 1
+.SH NAME
+ego \- increase user's ego
+.SH SYNOPSIS
+.B ego
+.SH DESCRIPTION
+.I Ego
+prints a known fact about the user, to increase his or her ego.
+This is most useful for Plan B users that might be embarrashed due
+to system bugs.
+.SH FILES
+.B /sys/games/lib/ego
+.SH SOURCE
+.B /rc/bin/ego
+.SH BUGS
+Some users do not believe the printed facts.

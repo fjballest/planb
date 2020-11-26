@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/fossil/dist/repl/linferno.db
+dir=/n/fossil/usr/inferno
+excl=(-itmp -iusr)

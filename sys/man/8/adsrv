@@ -1,0 +1,79 @@
+.TH ADSRV 8 
+.SH NAME
+adsrv \- Plan B volume announce server
+.SH SYNOPSIS
+.B adsrv
+[
+.B -d
+]
+[
+.B -n
+.I addr
+]
+[
+.B -c
+.I volcfg
+]
+[
+.I dir
+]
+.SH DESCRIPTION
+.I Adsrv
+is a registry service for Plan B volumes. Volumes
+register with it to announce availability, names and properties, and
+.I bns
+tries to reach this service to learn of publicly available volumes.
+.PP
+The program runs at the central file server, so that all other machines
+can know where to find it. This service uses an ad-hoc protocol to
+register and to discover volumes.
+.PP
+The protocol maintains connections
+open between file servers and
+.I adsrv
+that are initially used the file servers to write descriptions of their volumes
+in the format required by
+.IR bns (4).
+While the connection is alive,
+.I adsrv
+keeps a copy of the announce at
+.B /lib/ndb/vol
+or at
+.I dir
+when it is specified. When the connection breaks, the announce is
+forgotten and the corresponding file with the copy is removed.
+.PP
+Connections between
+.I bns
+and
+.I adsrv
+are used by the former to ask for the set of known announces, which are
+sent using the standard description format for the volume spec. See
+.IR bns (4).
+.PP
+Option
+.B -c
+tells
+.I adsrv
+to read
+.I volcfg
+to find announces for static volumes (which are always there).
+.PP
+Option
+.B -n
+can be used to give an alternate address to listen for client requests.
+The default address is
+.B tcp!*!11010
+and is assumed to be available at the file server.
+.PP
+Flag
+.B -d
+enables diagnostic messages for debugging.
+.SH SOURCE
+.B /sys/src/cmd/adsrv.c
+.SH "SEE ALSO"
+.IR bns (4),
+.IR planbfs (4).
+.SH BUGS
+Connections are not authenticated.
+Anyone can lie.

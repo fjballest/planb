@@ -1,0 +1,42 @@
+.TH BRC 8 
+.SH NAME
+brc \- Plan B boot script
+.SH SYNOPSIS
+.B brc
+.SH DESCRIPTION
+After the kernel boots, it execs
+.B /boot
+(see
+.IR root (3)),
+which in turn execs
+.BR /$cputype/bin/bns .
+.IR bns (8)
+sets the
+.B $service
+environment variable to
+.BR terminal ,
+starts the dynamic namespace facility of Plan B, auto-declares
+volumes for
+.B /
+and
+.B usr
+and finally, after mounting itself using
+.IR namespace.planb (4),
+invokes the
+.B brc
+script to bring the system up.
+.PP
+This script starts appropriate network processes and
+administrative daemons and services.
+.PP
+This file reflects the configuration of the system.
+.PP
+In general, a Plan B
+.I brc
+starts the network, any local file system, and whatever
+local volumes are present for the machine. It also sets the machine location.
+.SH SOURCE
+.B /rc/bin/brc
+.SH "SEE ALSO"
+.IR bns (4),
+.IR booting (8).

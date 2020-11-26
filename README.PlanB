@@ -1,0 +1,17 @@
+This is Plan B 4th edition. Most of it is Plan 9 from Bell Labs 4th edition
+taken verbatim.  The system has been changed and includes technology
+from Plan B 2nd and 3rd edition.
+
+To boot a plan b system use this in your plan9.ini:
+
+
+[planb]
+bootfile=ether0!/386/9pcb.gz
+nobootprompt=tcp 
+rootspec=planb/active
+usrspec=main/active
+init=/386/bin/bns -l
+sysname=nautilus
+planb=yes
+
+

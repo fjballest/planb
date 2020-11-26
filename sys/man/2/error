@@ -1,0 +1,90 @@
+.TH ERROR 2
+.SH NAME
+estrdup, emalloc, erealloc, errinit, noerror, error, warn, catcherror, dprint \- local error handling utilities
+.SH SYNOPSIS
+.B #include <u.h>
+.br
+.B #include <libc.h>
+.br
+.B #include <error.h>
+.PP
+.B
+char*	estrdup(char*)
+.br
+.B
+void*	emalloc(int);
+.br
+.B
+void*	erealloc(void*,int)
+.br
+.B
+void	dbgprint(char* fmt, ...)
+.br
+.B
+void	errinit(Error* e)
+.br
+.B
+void	noerror(void)
+.br
+.B
+void	error(char* msg, ...)
+.br
+.B
+void	warn(char* msg, ...)
+.br
+.B
+void	catcherror(void)
+.SH DESCRIPTION
+These routiles are tools for error handling.
+The ones named like standard functions with the letter
+.B e
+prepended behave as expected. However, they check that the standard routine did its
+work and call
+.IR sysfatal (2)
+otherwise.
+.PP
+.IR catcherror ,
+.IR noerror ,
+.IR error ,
+and
+.IR errinit
+provide exeption handling for C, in the same style of the similar routines used in
+the kernel. The only difference is that
+.I errinit
+should be called before using any other. They can be used both with and without
+the
+.IR thread (2)
+library.
+.PP
+.I  Dprint
+is like
+.IR fprint (2)
+but prints only if the global
+.B debug
+is true. Beware that it is a macro and has a conditional statement. Always suround it
+with braces when used within
+.B if
+statements.
+.SH SOURCE
+.B /sys/src/liberror
+.SH EXAMPLE
+Catch an error, and raise one.
+.PP
+.EX
+void f(void)
+{
+	error("raise this!");
+}
+
+void
+main(int argc, char **argv)
+{
+	Error	e;
+	errinit(&e);
+	if (catcherror()){
+		sysfatal("catched: %r");
+	}
+	f();
+	noerror();
+}
+.EE

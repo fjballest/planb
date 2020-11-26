@@ -1,0 +1,26 @@
+.TH TELL 1
+.SH NAME
+tell, msgs \- text and voice message delivering
+.SH SYNOPSIS
+.B tell
+.I user
+.I message
+.PP
+.B msgs
+.SH DESCRIPTION
+.I Tell
+sends a voice
+.I message
+to
+.I user
+by locating a voice device at a location nearby
+the user. It also appends the message at
+.B /who/$user/msgs
+if such file exists.
+.PP
+.I Msgs
+displays the messages sent by
+.I tell
+by polling the message file for changes.
+.SH "SEE ALSO"
+.IR env (8)

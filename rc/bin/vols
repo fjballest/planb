@@ -1,0 +1,26 @@
+#!/bin/rc
+
+if (! test -e /srv/vol){
+	# old plan b
+	{
+		echo '# '
+		ns | grep '^# '
+	} | sed 's/..//'
+	exit ''
+}
+# The spec strings we use break ns(1), which assumes that spec
+# does not contain white spaces.
+vols=`{cat /proc/$pid/ns | grep '^mount'| grep ' (#s/vol|/srv/vol) ' |
+	sed -e 's|.*#s/vol +||' -e 's|-[TUM]+ ||' |
+	awk '{print $2}' | sed 's/^[!*]//' |
+	grep -v '^$' | sort | uniq}
+for (v in $vols) {
+	ls $v >/dev/null >[2=1]
+	fs=`{grep  '^# '^$v^'	' /dev/vol | 
+		sed -e 's/.*\[//' -e 's/].*//' | sed 1q}
+	if (~ $#fs 0)
+		fs=none
+	echo $v^'	'^$"fs
+}
+
+

@@ -1,0 +1,243 @@
+.TH X10 4 
+.SH NAME
+x10 \- X10 CM11 controller
+.SH SYNOPSIS
+.B x10/fs
+[
+.B -Diq
+]
+[
+.B -d
+.I dev
+]
+[
+.B -f
+.I conf
+]
+[
+.B -h
+.I hc
+]
+.SH DESCRIPTION
+.I X10
+is a network for house automation that uses the electrical
+wiring of the house. The network is made of several house areas, identified
+by a house code (hc). Each house code has several devices,
+identified by a device code (dc). House codes go from
+.B a
+to
+.B p.
+Device codes go from
+.B 1
+to
+.B 16.
+.PP
+This program
+is a file system (and a shell) to talk to X10 CM11 controllers. It
+can be used to request status for the X10 devices controlled,
+and also to issue commands to the devices. By default it services
+all devices with house code
+.B a;
+option
+.B -h
+can be used to service a different house. The program
+services its file system at network address
+.B tcp!*!x10
+and accepts multiple concurrent clients mounting the X10 services.
+.PP
+The file tree serviced is a single directory with a
+.B cm11
+file that represents the controller, plus one extra file
+per device controlled. Device file names are made out of
+the house and device names. For example, the file
+.B a1
+represents a device using
+.B 1
+as the device code and
+.B a
+as the house code. As the controller sees devices (for example,
+due to commands from the remote control), it adds the
+corresponding files to the directory.
+.PP
+A
+.IR write (2)
+to the
+.B cm11
+file can be used to execute any of the commands listed below that refer
+to a house or a device.
+A
+.IR read(2)
+on a device file returns any of the strings
+.B on
+and
+.B off
+depending on the device status. A
+.IR write (2)
+to a device file executes the command supplied using as the
+house and device codes those of the device. For example, a write
+with the string
+.B on
+to the file
+.B a1
+would execute the command
+.B "on a 1"
+(which turns the device on).
+.PP
+Permission checking is implemented. Both the
+.B cm11
+and device files accept
+.IR wstat (2)
+requests to change the owner and permissions. However,
+the owner can be changed just once, further
+attempts are refused. Permissions can be changed too.
+This can be used to assign
+ownership of x10 switches to their legitimate owners and
+to prevent accidental power offs. Users are authenticated
+using
+.IR factotum (4)
+prior to granting access to the file system, but note
+that any x10
+controller plugged in a wall could command devices at will.
+The user who started the program is always
+considered as a file owner, regarding permission checking..
+.PP
+By default, x10 uses
+.B /dev/eia0
+as the serial device to reach the CM11 controller. Option
+.B -d
+can be used to use another device.
+.PP
+Flag
+.B -i
+makes the program accept commands like a shell, instead of servicing
+its file tree. This is useful to diagnose problems. Option
+.B -q
+makes x10 quiet, and combined with
+.B -i
+can be used to pipe commands from
+standard input. Option
+.B -D
+on the other hand, makes it verbose, for debugging. By supplying
+this option more than once, extra diagnostics may be enabled. The program
+logs events and diagnostics to the
+.B /sys/log/x10\fIH\fP
+file, where \fIH\fP is the house code.
+.PP
+The following commands are available:
+.TP "bright hc dc dim"
+.BI s
+loads the CM11 status information (only available in interactive mode).
+.TP
+.BI d
+dumps the loaded status (only available in interactive mode).
+.TP
+.BI q
+quits (only available in interactive mode).
+.TP
+.BI p
+prints the set of devices known, and their status (only available in interactive mode).
+.TP
+.BI alloff " hc"
+switches off all devices with the same house code.
+.TP
+.BI lightson " hc" 
+turns on the lights.
+.TP
+.BI on " hc dc" 
+switches the device on.
+.TP
+.BI off " hc dc" 
+switches the device off.
+.TP
+.BI dim " hc dc dim" 
+sets up a dim ammount (from 0 to 100%) for the device. This is dangerous,
+since the device controlled might be a terminal (despite using an X10 light
+switch).
+.TP
+.BI bright " hc dc dim" 
+sets up a bright ammount (from 0 to 100%) for the device. This is dangerous,
+for the same reason.
+.TP
+.BI lightsoff " hc" 
+turns off the lights.
+.TP
+.BI stson " hc" 
+sends a status on to the CM11. This and the next two commands
+are implemented for debugging purposes, the file system already issues
+status requests to maintain an updated view of the X10 world.
+.TP
+.BI stsoff " hc" 
+sends a status off to the CM11.
+.TP
+.BI stsreq " hc" 
+issues a status request to the CM11.
+.LP
+Upon starting, this program reads command lines from the file
+.B /sys/lib/x10conf
+(or 
+.I conf
+if given)
+that are executed as if sent to the
+.B cm11
+file. This can be used to switch on certain devices after
+a power failure. Besides, a line with format
+.EX
+	perm HD user group mode
+.EE
+would setup permissions for the device with house and
+device code
+.B HD
+to the given user, group and mode. The device code 0
+can be used to refer to the cm11 file.
+A line of the format
+.EX
+	name HD name
+.EE
+would make the file name for device
+.B HD
+to be
+the given one. Comments are allowed using
+.IR rc (1)
+syntax.
+.SH EXAMPLE
+With this configuration file
+.EX
+	# house a serviced by victim
+	# cm11, victim
+	perm a0 nemo planb 0660
+	
+	# power source
+	on a 1
+	perm a1 nemo nemo 0664
+	name a1 pwr:136term
+	
+	# motion detector
+	off a 5
+	perm a5 nemo planb 0444
+	name a5 who:136
+.EE
+This can start and mount the service, and
+switch the a1 and a3 devices off.
+.EX
+	; x10/fs
+	; 9fs tcp!localhost!x10
+	; echo off > /n/x10/pwr:136term
+	; echo off a 3 > /n/x10/cm11
+.EE
+.SH SOURCE
+.B /sys/src/cmd/x10
+.SH FILES
+.B /sys/lib/x10conf
+.SH SEE ALSO
+.IR x10 (1)
+and www.x10.com.
+.SH BUGS
+X10 is not reliable since commands may be silently
+ignored by devices, and it provides no
+means for authentication, as far as we know.
+Some CM11 functions, not mentioned here, are either unimplemented
+or untested. Only house code A has been thoroughly exercised,
+using other house codes may be unreliable.
+
+
+

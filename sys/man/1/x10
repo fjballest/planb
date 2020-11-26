@@ -1,0 +1,118 @@
+.TH X10 1 
+.SH NAME
+x10 \- X10 user programs
+.SH SYNOPSIS
+.B x10/ox10
+[
+.I file...
+]
+.PP
+.B x10/gui
+[
+.I dir
+[
+.I file...
+]
+]
+.PP
+.B x10/power
+[
+.B -t
+.I termfile
+]
+[
+.B -v
+.I volfile
+]
+[
+.B -n
+.I volfile
+]
+[
+.B -l
+.I lightfile
+]
+.I whofile
+.SH DESCRIPTION
+These programs are user utilites to be used together with the
+.IR x10 (4)
+X10 controller program. The
+.I gui
+program
+is a graphical user interface that shows the status of the X10 devices.
+It presents a box for each control that is shown in yellow when the device is
+on. A click with mouse button 3 or button 1
+on any device would toggle its state. If
+the command fails, the device is shown in red for a while. A click with mouse
+button 2 would toggle the write permission on the file (useful to prevent
+other commands from switching the device). The devices shown
+are those in
+.B /devs/x10
+or in
+.I dir
+(when specified). If a set of
+.I file
+arguments is given, only those devices are shown.
+.PP
+.I Ox10
+is similar to
+.I gui
+but intended for use within
+.IR omero (1).
+Its arguments are the list of files/directories
+where to find the X10 devices. By default,
+.B /devs/x10
+is used and only devices configured with a name are shown.
+.PP
+.B Power
+is a program that controls the power source of terminals and lights
+as well as the
+audio output volume depending on the presence of a human in the room,
+as determined by the X10 device
+specified by
+.IR whofile .
+.PP
+Each
+.I termfile
+given is switched off when there is no human detected by
+more than half an hour. It is switched on when the human comes back.
+.PP
+Each
+.I light
+given is switched off when there is no human detected by
+more than one minute. It is switched on when the human comes back.
+.PP
+Each
+.I volfile
+volume control given to option
+.B -v
+is set to zero (mute) when there is no human during more
+than one minute. The volume is restored to its previous value when the
+human comes back. If a volume file is given to option
+.B -n
+the volume is lowered to a 40% when there is a human detected, and
+restored to its previous state otherwise. This option is useful to lower the
+volume level while a visit is detected.
+.SH EXAMPLE
+Run this at your cpu server so your terminal power and room light
+are handled from there. 
+.EX
+	; cpu
+	cpu% 9fs x10  && cd /n/x10
+	cpu% x10/power -t pwr:136term -l pwr:136light who:136
+.EE
+Run this at your terminal to adjust your volume level.
+.EX
+	; 9fs x10  && cd /n/x10
+	; x10/power -v /dev/volume who:136
+.EE
+.SH SOURCE
+.B /sys/src/cmd/x10
+.SH SEE ALSO
+.IR x10 (4),
+.IR env (8).
+.SH BUGS
+Too many user interfaces. All but
+.I ox10
+will go in the future. X10 is not reliable.
+

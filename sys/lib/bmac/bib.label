@@ -1,0 +1,25 @@
+#
+#  labels format
+#
+F
+I BMACLIB/bibinc.fullnames
+.pl 1.5i
+.de ][		\" format address automatically
+.di [Q
+.nf
+\\*([A
+.if !~\\*([T~~ \\*([T
+.if !~\\*([D~~ \\*([D
+.if !~\\*([I~~ \\*([I
+.if !~\\*([B~~ \\*([B
+.if !~\\*([N~~ \\*([N
+.if !~\\*([C~~ \\*([C
+.if !~\\*([Z~~ \\h'1i'\\*([Z
+.di
+.nf
+.[Q
+.rm [T [D [I [N
+.rm [C [Z [L [A
+.rm [Q [B
+.bp
+..

@@ -1,0 +1,162 @@
+.TH READF 2
+.SH NAME
+readf, readfstr, createf, writef, writefstr, announcevol, cmdoutput, tcmdoutput \- Plan B convenience tools
+.SH SYNOPSIS
+.B #include <u.h>
+.br
+.B #include <libc.h>
+.br
+.B #include <b.h>
+.PP
+.nf
+.PP
+.B
+void* readf(char* file, void* buf, long len, long* nout)
+.PP
+.B
+char* readfstr(char* file)
+.PP
+.B
+long writef(char* file, void* buf, long len)
+.PP
+.B
+long createf(char* file, void* buf, long len, ulong perm);
+.PP
+.B
+long writefstr(char* file, char* str)
+.PP
+.B
+int	announcevol(int afd, char* addr, char* name, char* cnstr)
+.PP
+.B
+long	cmdoutput(char* cmd, char* out, long sz);
+.PP
+.B
+long	tcmdoutput(char* cmd, char* out, long sz);
+.SH DESCRIPTION
+The first few functions provide a convenience interface to perform entire file I/O and avoid
+keeping file descriptors open for too long, which is important when using volumes
+provided through
+.IR bns (8).
+The last functions are convenience routines used by many Plan B tools.
+.PP
+.I Readf
+reads all the contents of
+.I file
+into a memory buffer and returns a pointer to  it. For streams, only a single
+.I read
+is made. The memory can be supplied by the caller,
+by giving a non-nil
+.I buf
+and setting
+.I len
+to the size of the buffer provided. When
+.I buf
+is nil,
+memory  for the buffer is allocated with
+.IR malloc (2)
+and the caller is responsible for calling
+.IR free (2)
+to release it.
+If
+.I nout
+is not nil,
+the number of bytes read is placed in
+.BR * nout.
+.PP
+.I Writef
+performs the opposite operation, and stores
+.I len
+bytes starting at
+.I buf
+into
+.IR file .
+The file must exist and have write permission.
+It is legal to store zero bytes, to truncate a file.
+.I Writef
+returns the number of bytes stored or a negative value on errors.
+.PP
+.I Createf
+is like
+.IR writef ,
+but is creates the file when it does not exist. The file
+mode is set to
+.IR mode .
+When creating a directory, the user supplied data is ignored.
+.PP
+The functions
+.I readfstr
+and
+.I writefstr
+are convenience wrappers that read and write files that
+do not contain null characters. They provide a simpler interface
+for the common case when the file contains text. Note that
+.I readfstr
+allocates the memory used, and the caller is responsible for
+releasing it. Also,
+.I readfstr
+returns a valid string for C or nil on errors.
+.PP
+For files too big to have its size contained in a long
+integer, the functions described in
+.IR read (2)
+must be used instead.
+.PP
+The utility
+.I announcevol
+registers with
+.IR adsrv (8)
+a Plan B volume, to announce it and let other machines discover it. Besides, it notifies
+the local
+.IR bns (8)
+program to let it know of the new local volume. The
+.I afd
+descriptor should be initially
+.B -1
+or a connection to the relevant
+.IR adsrv
+service. A descriptor to talk to such program is returned when the volume could
+be registered. The user is expected to call
+.I announcevol
+again, every few seconds or minutes, and supply the descriptor being used to
+register the volume. The last three parameters are the network address of the volume
+being registered (where its 9P server can be reached), the global name for the file tree, and
+the attributes of the tree as described in
+.IR cnstr (6).
+.PP
+The last two routines,
+.I cmdoutput
+and
+.IR tcmdoutput ,
+run
+.I cmd
+as an
+.IR rc (1)
+command line
+and place in
+.I out
+at most
+.I sz
+bytes resulting from of standard output of the command. The number of bytes read
+is the result of the function. The former uses processes and the later is for use with
+.IR thread (2).
+.SH SOURCE
+.B /sys/src/libb
+.SH SEE ALSO
+.IR planb (1),
+.IR intro (2),
+.IR read (2)
+.SH DIAGNOSTICS
+These functions set
+.IR errstr .
+.I Readf
+and
+.I readfstr
+return
+.B nil
+upon errors.
+.SH BUGS
+The sizes should be 64 bit integers.
+For streams,
+.I readf
+reads at most 16Kbytes each time it is called.

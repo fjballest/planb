@@ -1,0 +1,154 @@
+#!/bin/rc
+# Plan B start rc script.
+# Used intead of Plan 9's termrc
+#
+
+
+#flag x +
+
+if (~ $#fs 0)
+	fs=unconfigured
+
+
+# We want these ones mounted asap.
+# Other volumes found in our main fileservers are
+# configured via adsrv
+cat >>/dev/vol <<EOF
+tcp!$fs!564	main/active	/mail	/mail
+EOF
+cat >>/dev/vol <<EOF
+tcp!$fs!564	main/active	/sys/log	/sys/log
+EOF
+cat >>/dev/vol <<EOF
+tcp!$fs!564	main/active	/cfg	/cfg
+EOF
+
+mount -c /srv/vol /mail /mail
+mount -c /srv/vol /sys/log /sys/log
+mount -c /srv/vol /cfg /cfg
+
+
+cp /adm/timezone/local /env/timezone
+user=`{cat /dev/user}
+objtype=$cputype
+service=terminal
+facedom=gsyc.escet.urjc.es
+cpu=aquamar
+mntgen -s slashn && chmod 666 /srv/slashn
+mntgen -s slashdevs /devs && chmod 666 /srv/slashdevs
+mntgen -s slashmnt /mnt && chmod 666 /srv/slashmnt
+
+ip/ipconfig -rp ether /net/ether0  
+
+# Start cs and wrap it with ccs, which
+# caches entries to avoid touching files
+# in case / is gone and we are retrying it.
+
+if ( test -x /bin/ndb/ccs) {
+	ndb/cs -x /net -f /lib/ndb/local
+	rm -f /srv/cs
+	unmount '#s/cs_net' /net >[2]/dev/null # paranoia
+	unmount '#s/cs_net' /net >[2]/dev/null
+	ndb/ccs 
+}
+if not {
+	ndb/cs -f /lib/ndb/local
+}
+
+sysname=`{cat /dev/sysname}
+ndb/dns 
+ip/ipconfig loopback /dev/null 127.0.0.1
+sysaddr=`{ndb/query sys $sysname ip}
+if (~ $bootargs local* || ~ $menuitem home* || ~ $local yes){
+	aux/timesync -rLa 1000000
+}
+if not {
+	aux/timesync -n
+}
+if (test -d /dev/sd??) {
+	for(disk in /dev/sd??) {
+		if(test -f $disk/data && test -f $disk/ctl)
+			disk/fdisk -p $disk/data >$disk/ctl >[2]/dev/null
+		for(part in $disk/plan9*)
+			if(test -f $part)
+				disk/prep -p $part >$disk/ctl >[2]/dev/null
+		echo dma on>$disk/ctl
+	}
+}
+if (test -e /dev/sdC0/fossil) {
+	if (! test -e /srv/fossil)
+		fossil/fossil -f /dev/sdC0/fossil
+	if (test -e /srv/fossil && ! test -d /n/fossil/adm)
+		mount -c /srv/fossil /n/fossil
+	/mail/lib/kicklocalqueue fossil & # try to send mail queued in fossil
+}
+if (test -e /dev/sdC0/fs){
+	if (! test -e /srv/cons)
+		fossil/fossil -f /dev/sdC0/fs
+	mount -c /srv/fossil /n/fossil
+}
+aux/apm -s apm
+usbstart
+if (test -e /dev/volume)
+	mfs -v
+
+touch /tmp/checkwrite >[2]/dev/null || ramfs
+
+echo -n 'ctlpoff' >'#c/consctl'
+if(! ~ `{cat /dev/user} none)
+	aux/vmware
+aux/mouse $mouseport
+echo scrollswap >'#m/mousectl'
+vgasize=`{echo $vgasize}
+if(! ~ $"monitor '' && ! ~ `{cat /dev/user} none)
+	aux/vga -l $vgasize
+ndb/mobile
+mount -a /srv/cs /net
+mount -a /srv/dns /net
+bind -c /usr/$user/tmp /tmp
+bind -b $home/bin/rc /bin
+bind -b $home/bin/$cputype /bin
+
+tabstop=8
+MKFILE=$home/lib/skel/mkdoc
+if (~ $vgasize 1024x768*){
+	font=/lib/font/bit/misc/unicode.6x13.font
+	afont=$font
+}
+if not {
+	font=/lib/font/bit/VeraMono/VeraMono.12.font
+	afont=/lib/font/bit/Vera/Vera.12.font
+}
+prompt=('; ' ';; ')
+if (~ $#kbmap 0)
+	cp /sys/lib/kbmap/us /dev/kbmap
+if not
+	cp $kbmap /dev/kbmap
+if (! test -d $home/lib/snarf){
+	mkdir $home/lib/snarf
+	chmod +t $home/lib/snarf
+	touch $home/lib/snarf/snarf $home/lib/snarf/sel
+	chmod go-rwx $home/lib/snarf/snarf $home/lib/snarf/sel
+}
+test -e /dev/sel || bind -b $home/lib/snarf /dev
+cp /sys/lib/kbmap/mouse-csa /dev/kbmap
+
+env/locate
+location=`{cat /env/location}
+env/mkwhat
+env/setrole
+kbdfs   -V /dev/kbd
+mousefs    -V /dev/mouse
+youps
+
+mount -ac /srv/vol /what '*/what'
+mount -c /srv/vol /devs/audio '/devs/audio loc='$location
+mount -c /srv/vol /devs/voice '/devs/voice loc='$location
+mount -c /srv/vol /n/music /n/music
+
+if (test -e /usr/$user/lib/profile){
+	. /usr/$user/lib/profile
+	echo 'user profile exited'
+}
+exec rc -i
+

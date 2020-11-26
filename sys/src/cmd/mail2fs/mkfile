@@ -1,0 +1,42 @@
+</$objtype/mkfile
+
+TARG=	mail2fs\
+	mails\
+
+SCRIPTS=\
+	Mails\
+	Arch\
+	Reply\
+	Spam\
+	Spam+\
+	Spam-\
+
+
+OMAIL2FS=\
+	mail2fs.$O\
+	mbox.$O\
+	strtotm.$O\
+
+LIB=
+
+HFILES= /sys/src/cmd/upas/common/common.h
+
+BIN=/$objtype/bin
+
+UPDATE=\
+	mkfile\
+	$HFILES\
+	${TARG:%=%.c}\
+	${OFILES:%.$O=%.c}\
+
+</sys/src/cmd/mkmany
+CFLAGS=$CFLAGS -I/sys/include -I/sys/src/cmd/upas/common
+
+$O.mail2fs: $OMAIL2FS /sys/src/cmd/upas/common/libcommon.a$O
+
+install:V:
+	for (i in $TARG)
+		mk $MKFLAGS $i.install
+	for (s in $SCRIPTS)
+		cp $s /rc/bin
+

@@ -1,0 +1,8 @@
+# Volumes that we always have at lsub
+# do not leave empty lines in this file.
+# address	spec		path	name	cnstr
+tcp!193.147.71.86!564	other/active	/	/n/once
+tcp!212.128.4.127!564	main/active	/music	/n/music
+tcp!193.147.71.86!564	other/active	/music	/n/music
+tcp!212.128.4.128!19000	-	/	/devs/x10
+tcp!212.128.4.205!11008	-	/	/devs/hx

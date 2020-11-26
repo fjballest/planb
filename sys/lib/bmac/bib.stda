@@ -1,0 +1,13 @@
+#
+#  standard alphabetic format
+#
+I BMACLIB/bibinc.shortnames
+C2D-2
+SAD-2
+AA
+EA
+'so \*(l]/bmac.std
+.de s[   \" start reference
+.nh
+.IP [\\*([F] 10n
+..

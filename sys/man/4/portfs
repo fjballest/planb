@@ -1,0 +1,135 @@
+.TH PORTFS 4
+.SH NAME
+portfs, sendfs, youps \- we deliver events and messages for Plan B
+.SH SYNOPSIS
+.B portfs
+[
+.B -abcAD]
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -s
+.I srv
+]
+[
+.B -n
+.I addr
+]
+[
+.B -V
+.I vol
+]
+.PP
+.B sendfs
+[
+.B -d
+]
+[
+.B -p
+.I portfile
+]
+.PP
+.B
+youps
+.SH DESCRIPTION
+The
+.I youps
+program suite (pronounced
+.IR you-p-s )
+receives, examines, rewrites, and dispatches
+.IR plumb (6)
+messages to ports provided by machines owned by the user.
+Its behaviour is similar to 
+.IR plumber (4),
+when used in a centralized setting.
+.PP
+.I Portfs
+implements a file system that provides message ports. A port can be created
+by creating a file. Data written to a port is delivered to all processes
+reading from the port. Data uses to be
+.I plumb
+messages, but it may be any other thing. Once a port has ben read, when
+all readers of a port close the port, the port is removed. By default,
+.I portfs
+mounts itself at
+.BR /devs/ports
+and listens for network clients at
+.BR tcp!*!11002 .
+Options are similar to those of most file servers, as described in
+.IR planb (4).
+.PP
+.I Sendfs
+delivers events to ports. The program services are mounted on the directory
+.B /mnt/plumb
+and consists of two
+pre-defined files:
+.BR send .
+and
+.BR rules .
+.PP
+Programs use
+.B write
+(see
+.IR read (2))
+to deliver messages to the
+.B send
+file, and
+.I sendfs
+decides, looking at its configuration, to which port the message should be sent.
+The behaviour and configuration is like in
+.IR plumber (4).
+Beware that commands used within a plumb rule should supply the
+.B -p
+option to any
+.I plumb (1)
+command issued within the rule. Otherwise,
+.I plumb
+will not be able to deliver the message because there is no
+.B send
+file in the file system as seen by the command (That file is implemented
+by
+.I sendfs
+only as a front-end for the user).
+.PP
+The file
+.BR rules
+behaves like in
+.IR plumber (4)
+and permits configuration of the service.
+.PP
+.I youps
+is a convenience script that starts the service by running
+.I portfs
+and
+.I sendfs
+after mounting a union of all user ports at
+.BR /mnt/plumb .
+.SH FILES
+.TF /usr/$user/lib/plumbing
+.TP
+.B /usr/$user/lib/plumbing
+default rules file
+.TP
+.B /sys/lib/plumb
+directory to search for files in
+.B include
+statements.
+.TP
+.B /mnt/plumb
+mount point for the send file and the union of all ports. The
+ports of the local machine are mounted above those of others.
+.TP
+.B /devs/ports
+ports serviced by the local machine.
+.SH SOURCE
+.B /sys/src/cmd/youps
+.SH "SEE ALSO"
+.IR plumber (4),
+.IR plumb (1),
+.IR plumb (2),
+.IR plumb (6)
+.SH BUGS
+The delivery of messages across the network is not secured.

@@ -1,0 +1,22 @@
+#!/bin/rc
+
+text=''
+if (~ $1 -i) {
+	text=`{sed 1q}
+	shift
+}
+machine=$1
+shift
+if (~ $text '')
+	text=$"*
+# 
+# This processing should be done according to a $home/lib/words
+# file or something, to state which things (eg, rm) are pronounced
+# in which ways (eg. delete).
+# Probably, each new application should install its own set of
+# translations.
+
+if (test -x /bin/spellwords)
+	text=`{echo $text | spellwords}
+{  echo '(SayText "'^$"text^'")' } | ssh $machine festival
+exit ''

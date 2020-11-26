@@ -1,0 +1,6 @@
+#!/bin/rc
+
+if (test -e /devs/voice/output)
+	echo $* >/devs/voice/output >[2]/dev/null
+
+exit ''

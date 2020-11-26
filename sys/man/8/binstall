@@ -1,0 +1,41 @@
+.TH BINSTALL 8
+.SH NAME
+binstall \- install a planb with a replica
+.SH SYNOPSIS
+.B binstall
+.I repletter
+.SH DESCRIPTION
+.I Binstall
+installs a planb on /dev/sdC0 partitioning the system, making the hard disk
+bootable and configurating two replicas, one
+for the user and one for the system.
+.PP
+NOTE: ALL THE CONTENTS ON /dev/sdC0 will be lost.
+.PP
+The user must boot with a floppy from the filesystem to replicate.
+Then add a letter for himself on /lib/repl/Readme.
+The plan9.ini and the kernel for the 9fat partition are extracted from this
+floppy.
+The parameter repletter is a unique letter representing the system replica. It
+must be added by hand to /lib/repl/Readme. 
+.PP
+Add relevant facts for you (new) computer in
+.B /what/$sysname
+in the appropriate context file.
+.PP
+This progra creates at
+.B $home/bin/rc/synccmd
+a script which can be run
+(maybe customized), to synchronize the two replicas generated.
+.SH EXAMPLES
+.PP
+The letter for the replica is z:
+.EX
+binstall z
+.EE
+..SH SOURCE
+.B /rc/bin/binstall
+.SH SEE ALSO
+.IR fs (4)
+.br
+.IR yesterday (1)

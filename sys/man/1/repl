@@ -1,0 +1,140 @@
+.TH REPL 1
+.SH NAME
+new, sync, scan \- peer to peer replica management
+.SH SYNOPSIS
+.B repl/new
+.I repl
+.I id
+.I dir
+[
+.IR excldir ...
+]
+.br
+.B repl/sync
+[
+.B -N
+]
+[
+.B -12lrn
+]
+.I repl1
+.I repl2
+[
+.IR dir ...
+]
+.br
+.B repl/scan
+.I repl
+.SH DESCRIPTION
+These programs provide a simplified user interface to
+the peer-to-peer replica management system described in
+.IR repl (8).
+Each peer is called a replica and holds a
+replicated file tree.
+Any number of replicas can be defined and
+any pair can be synchronized at any time. There is no centralized
+server nor there is a synchronization order required to detect
+conflicts.
+.PP
+Each replica is described by a
+simple
+.IR rc (1)
+script that identifies the file tree and related
+.IR repl (8)
+information. The programs try to find configuration files
+at
+.B $home/lib/repl
+and
+.B /lib/repl
+unless a path is supplied.
+.PP
+.I New
+defines a new replica
+.I repl
+for the given directory,
+using the given identifier. The identifier must be a
+lower case letter and must be unique for each peer of a
+replicated tree. The file
+.I repl
+created by the script is used later as an argument
+for 
+.I sync
+and
+.IR scan .
+The optional
+.I excldir
+arguments
+are directories excluded from
+.I dir
+for replication purposes. See the examples below.
+.PP
+.I Sync
+synchronizes changes between replicas.
+Replicas are identified by the configuration
+files created by
+.IR new .
+Before synchronizing,
+.I sync
+scans both file trees for changes unless
+flag
+.B -N
+is given.
+Scan can be performed separately by using the
+.I scan
+script.
+If any
+.I dir
+is supplied, relative to the top-dir of a replica,
+synchronization applies only to it.
+.PP
+.I Sync
+flag
+.B -n
+performs a dry run to report changes between both replicas
+without synchronizing them (scan is still performed for both).
+The flag
+.B -l
+can be used to synchronize just the left replica (in command line
+order) with respect to the other. Flag
+.B -r
+does the same for the right replica.
+.PP
+Flags
+.B -1
+and
+.B -2
+can be used to resolve conflicts in favor of the first replica (the left one)
+and in favor of the second one (the right one).
+When there are different conflicts to be gained by different replicas,
+one replica can be updated by hand, and then used as the prefered to
+settle down all the conflicts.
+.SH EXAMPLE
+This defines for the system file tree, excluding
+.B /usr
+and
+.BR /dist ,
+a replica called
+.BR a .
+Then we define another replica called
+.B b
+for a laptop.
+.EX
+	; repl/new /dist/sys a /root /usr /dist
+	replica /dist/sys defined.
+	; repl/new /dist/laptop b /fossil /usr /dist
+	replica /dist/laptop defined.
+.EE
+.LP
+Synchronice the laptop resolving any conflict in favor
+of the system
+.EX
+	; repl/sync -r1 /dist/sys /dist/laptop
+.EE
+.SH SOURCE
+.B /sys/src/cmd/repl
+.SH SEE ALSO
+.IR repl (8),
+.IR replica (1).
+.SH BUGS
+Append only files are not synchronized to prevent duplication
+of file contents.

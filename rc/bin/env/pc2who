@@ -1,0 +1,91 @@
+#!/bin/rc
+
+# update /who /where using connectivity to laptops and other heuristics.
+# BUG: location is hardwired.
+
+rfork e
+test -d /who || { echo pctowho: no /who >'#c/cons' ; exit who }
+
+fn alive {
+	grep ttl <{ip/ping -n 1 $1 >[2]/dev/null} >/dev/null
+}
+
+machines=(barataria  azul frodo bunga 193.147.71.29 193.147.71.7 193.147.71.110 193.147.71.115 193.147.71.103 papageno ben)
+
+fn m2u {
+	switch($1){
+	case barataria
+		echo pheras
+	case azul
+		echo eva
+	case frodo
+		echo sarevalo
+	case bunga
+		echo grex
+	case 193.147.71.29
+		echo pbarrera
+	case 193.147.71.7
+		echo caguero
+	case 193.147.71.110
+		echo vmo
+	case 193.147.71.115
+		echo jcenteno
+	case 193.147.71.103
+		echo aleonar
+	case papageno
+		echo jmplaza
+	case ben
+		echo lrodero
+	case *
+		echo none
+	}
+}
+
+fn u2w {
+	switch($1){
+	case grex
+		echo 120
+	case pheras
+		echo 110
+	case sarevalo
+		echo 133
+	case eva
+		echo 110
+	case pbarrera
+		echo 115
+	case caguero
+		echo 120
+	case vmo
+		echo 120
+	case jcenteno
+		echo 111
+	case aleonar
+		echo 135
+	case papageno
+		echo jmplaza
+	case lrodero
+		echo 111
+	case *
+		echo none
+	}
+}
+
+while(;) {
+    for (m in $machines){
+	u=`{m2u $m}
+	w=`{u2w $u}
+	if (alive $m){
+		sts=online
+		loc=$w
+		own=$u
+	}
+	if not {
+		sts=away
+		loc=none
+		own=none
+	}
+	echo $sts >/who/$u/status
+	echo $loc >/who/$u/where
+    }
+    sleep 60
+}

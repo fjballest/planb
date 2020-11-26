@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/bfossil/dist/repl/lsys.db
+dir=/n/bfossil
+excl=(-iwho -iwhere -iwhat -icron -imail/box -imail/queue -imail/tmp -itmp -iadm -ilp/log -isys/log -imnt/keys -idist -ilp -iusr -ilib/ndb/mobile -ilib/font -imail/lib/whitelist -ilib/ndb/vol)

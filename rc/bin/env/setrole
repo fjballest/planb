@@ -1,0 +1,10 @@
+#!/bin/rc
+
+if (~ $#role 0)
+	role=`{env/getrole}
+echo $role >/what/$sysname/role
+echo welcome to your $role terminal  at $location
+if (test -e /devs/voice/output){
+	echo welcome to your $role terminal at $location >/devs/voice/output
+}
+exit ''

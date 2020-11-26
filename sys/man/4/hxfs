@@ -1,0 +1,83 @@
+.TH HXFS 4
+.SH NAME
+hxfs  \- hexamite active badges file system
+.SH SYNOPSIS
+.B hxfs
+[
+.B -A
+]
+[
+.B -d
+]
+[
+.B -s
+.I srv
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -n
+.I addr
+]
+[
+.B -c
+.I config
+]
+[
+.B -V
+.I volspec
+]
+.I iofile
+.SH DESCRIPTION
+Hexamite provides active badges that can be used to provide location
+for users and devices. There are ultrasound microphones intalled in the
+space that receive sound beacons from the active badges carried by users.
+The only button on each badge adjusts the interval between beacons. It cycles
+between a power-off state and different intervals. The led on the badge blinks
+on each beacon.
+.PP
+.I Hxfs
+services a file system that includes a file per badge. Each file contains the
+current location (or locations) for the badge. There can be more than one
+active location if several receivers are in range with the badge. Only the
+three most recent locations are kept, sorted from newest to oldest.
+.PP
+Names for badges and locations are configured in
+.BR /sys/lib/hxconf ,
+or
+.I config
+when supplied. This file contains a series of
+.B id=name
+expressions, which map the
+hexamite identifier
+.B id
+(printed on the badge)
+to
+.BR name .
+.PP
+Note that this driver is not intended to provide location information for
+programs,
+.BR /who ,
+.BR /where ,
+and
+.B /what
+should be used instead for that purpose. Other processes can use
+.I hxfs
+to update such directories according to heuristics acceptable for the users
+involved.
+.PP
+Hexamite receivers are networked using telephone cable and
+gatewayed through a serial port to the rest of the system. The
+.I iofile
+parameter is the file used
+to obtain raw sensor data, usually a serial port.
+.PP
+Other options determine debug and how to export the file system and announce the
+volume, like said in
+.IR planb (4).
+.SH SOURCE
+.B /sys/src/cmd/hxfs.c
+.SH FILES
+.B /sys/lib/hxconf

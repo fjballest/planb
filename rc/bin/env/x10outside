@@ -1,0 +1,18 @@
+#!/bin/rc
+sleep 40
+rfork ne
+while(;){
+	if (test -e /devs/x10/a4 ){
+		if (grep on /devs/x10/a4 >/dev/null)
+			ssh knoppix@outside 'export DISPLAY=:0 ; xset dpms force on'
+		if not
+			ssh knoppix@outside 'export DISPLAY=:0 ; xset dpms force off'
+	}
+	if (test -e /devs/x10/who:outside){
+		if (grep on /devs/x10/who:outside >/dev/null)
+			ssh knoppix@outside 'export DISPLAY=:0 ; xset dpms force on'
+		if not
+			ssh knoppix@outside 'export DISPLAY=:0 ; xset dpms force off'
+	}
+	sleep 5
+}

@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/whale/dist/repl/aplanb.db
+dir=/n/whale/usr/planb
+excl=()

@@ -1,0 +1,29 @@
+#!/bin/rc
+
+fn usage {
+	echo 'repl/new repl id dir [excldir...]'>[1=2]
+	exit usage
+}
+
+
+if (test  $#* -lt 3)
+	usage
+cfg=$1 ; shift
+id=$1 ; shift
+dir=$1 ; shift
+if (! ~ $#* 0)
+	excl=-i^$*
+db=`{echo $cfg | sed  -e 's/$/.db/'}
+
+cat >$cfg <<!
+#!/bin/rc
+db=$db
+dir=$dir
+excl=($excl)
+!
+chmod +x $cfg
+repl/scandb  -t -n $id $excl $dir $db
+echo replica $cfg defined.
+echo you may want to move $db to /dist/repl/ and
+echo put $cfg at /lib/repl after editing it.
+exit ''

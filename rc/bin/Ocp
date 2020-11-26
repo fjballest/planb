@@ -1,0 +1,23 @@
+#!/bin/rc
+
+#
+args=($1 $2)
+cd /
+from=`{echo $args | sed 's/ .*//'}
+to=`{echo $args | sed 's/[^ ]* //'}
+name=`{basename $from}
+from=`{basename -d $from}
+
+fromui=`{echo $from | sed 's|/devs/([a-zA-Z]*)/.*|\1|'}
+toui=`{echo $to | sed 's|/devs/([a-zA-Z]*)/.*|\1|'}
+
+echo Ocp $name from $from -$fromui- to $to -$toui- >>/sys/log/$sysname
+test -d $from || 9fs $fromui || exit $status
+test -d $to || 9fs $toui || exit $status
+test -d $from || exit 'no from'
+test -d $to || exit 'no to'
+cd $from
+tar c $name >[2]/dev/null | @{ cd $to ; tar x   } 
+
+cd $to/$name
+echo tag >ctl

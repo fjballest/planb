@@ -1,0 +1,127 @@
+#!/bin/rc
+
+# Generate web page from our /who information.
+
+if (~ $1 -d) {
+	while(;){
+		$0 >/usr/web/who/index.html.new
+		mv /usr/web/who/index.html.new /usr/web/who/index.html
+		sleep 30
+	}
+	exit ''
+}
+
+rfork ne
+test -d /who || { echo who2web: no /who >'#c/cons' ; exit who }
+
+cd /who
+users=`{echo * | sed 's/none|c0//'}
+
+
+fn firstfour {
+	echo $* | awk -F' ' '{print $1, $2, $3, $4, $5, $6}'
+}
+
+fn skipfour {
+	echo $* | sed 's/[a-z0-9A-Z_]+( |$)//' | sed 's/[a-z0-9A-Z_]+( |$)//' | 
+		sed 's/[a-z0-9A-Z_]+( |$)//' | sed 's/[a-z0-9A-Z_]+( |$)//' | 
+		sed 's/[a-z0-9A-Z_]+( |$)//' | sed 's/[a-z0-9A-Z_]+( |$)//'
+
+}
+
+fn outface {
+	if (test -e /who/$1/face.gif)
+		echo '		<img src="/w/who/'$1'/face.gif" alt="'$1' align=middle">'
+	if not
+		echo '		<img src="/w/who/none/face.gif" alt="'$1' align=middle">'
+}
+
+fn outuser {
+	echo '	<td width=150>'
+	if (! ~ $#* 0){
+		if (test -e /who/$1/status)
+			sts=`{cat /who/$1/status} 
+		if not
+			sts=unknown
+		if (test -e /who/$1/where)
+			loc=`{cat /who/$1/where} 
+		if not
+			loc=none
+		mail=`{cat /who/$1/letters} 
+		if (! ~ $#mail 0 && ~ $mail Mail)
+			mail=yes
+		if not
+			mail=no
+		echo '		<table border=0>'
+		echo '		<tr>'
+		echo '			<td width=50>'
+					outface $1
+		echo '			</td><td width=100>'
+		echo '			<font size=-1>'
+		echo '			sts:' $sts '<br>'
+		if (~ $loc none)
+			echo '			loc:'  $loc '<br>'
+		if not
+			echo '			<a href="/where">loc:'  $loc '</a><br>'
+		echo '			<a href="http://mailcam.lsub.org/">s-mail:' $mail '</a><br>'
+		echo '			<font size=+1>'
+		echo '			</td>'
+		echo '		</tr><tr>'
+		echo '		<td> '
+		echo '			<font size=-1>'
+		if ( test -e /usr/web/usr/$1)
+			echo '		<a href="/who/'$1'">'
+		if not
+			echo '		<a href="http://gsyc.escet.urjc.es/~'$1'">'
+		echo '		<b>' `{echo $1 | sed 's/(........).*/\1/'} '</b></a>'
+		echo '			<font size=+1>'
+		echo '		</td><td>'
+		if (~ $sts online)
+			echo '		<img src="/export/greenball.gif" alt="">'
+		if (~ $sts busy)
+			echo '		<img src="/export/redball.gif" alt="">'
+		if (~ $mail yes)
+			echo '		<img src="/export/letter.jpg" alt="">'
+		echo '		</td></tr>'
+		echo '		</table>'
+	}
+	echo '	</td>'
+}
+
+cat <<!
+<html>
+<head>
+<title> Who is at the Laboratorio de Sistemas Environment </title>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="refresh" CONTENT="30">
+</head>
+<body bgcolor="white">
+<hr>
+<h1> Who is at the  <a href="http://lsub.org">Laboratorio de Sistemas</a> Environment.
+</h1>
+<hr>
+<font size=-1>
+The user name is a link to the user web page.<br>
+<font size=+1>
+sts=<b>status</b>; loc=<b>location</b>; s-mail: has <b>real world mail</b> in the mail room; 
+<br>
+<table border=2>
+!
+
+while (! ~ $#users 0){
+	u=`{firstfour $users}
+	users=`{skipfour $users}
+	echo '<tr>'
+	outuser $u(1) ; outuser $u(2) ; outuser $u(3) ; outuser $u(4) ; outuser $u(5); outuser $u(6)
+	echo '</tr>'
+}
+
+cat <<!
+</table>
+<p>
+<hr>
+<p>
+As of $date
+</body>
+</html>
+!

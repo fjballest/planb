@@ -1,0 +1,27 @@
+# house a serviced by victim
+# cm11, victim
+perm a0 nemo planb 0660
+
+on a 1
+perm a1 nemo nemo 0664
+name a1 pwr:136lamp
+
+on a 2
+perm a2 nemo nemo 0664
+name a2 pwr:136term
+
+off a 4
+perm a4 nemo nemo 0644
+name a4 who:outside
+
+on a 3
+perm a3 nemo nemo 0664
+name a3 pwr:136light
+
+#off a 5
+#perm a5 paurea paurea 0644
+#name a5 who:124
+
+off a 6
+perm a6 nemo nemo 0644
+name a6 visit:136

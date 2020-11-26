@@ -1,0 +1,75 @@
+#!/bin/rc
+
+
+fn usage {
+	echo 'usage: repl/sync [-lr12n]  repl1 repl2 [dir...]' >[1=2]
+	exit usage
+}
+
+doscan=yes
+opt=()
+while(! ~ $#* 0 && ~ $1 -*){
+	switch($1){
+	case -N
+		doscan=no
+	case *
+		opt=($opt $1)
+	}
+	shift
+}
+if(~ $1 --)
+	shift
+if (~ $#1 0 || ~ $#2 0)
+	usage
+
+if (test -x $1)
+	. $1
+if not
+	if (test -x $home/lib/repl/$1)
+		. $home/lib/repl/$1
+	if not {
+		if (test -x /lib/repl/$1)
+			. /lib/repl/$1
+		if not {
+			echo 'no such replica: '^$1 >[1=2]
+			exit bad1
+		}
+	}
+db1=$db
+dir1=$dir
+
+if (test -x $2)
+	. $2
+if not
+	if (test -x $home/lib/repl/$2)
+		. $home/lib/repl/$2
+	if not {
+		if (test -x /lib/repl/$2)
+			. /lib/repl/$2
+		if not {
+			echo 'no such replica: '^$2 >[1=2]
+			exit bad2
+		}
+	}
+db2=$db
+dir2=$dir
+
+if (~ $doscan yes){
+	echo scanning $1
+	if (! repl/scandb  $excl $dir1 $db1){
+		echo scan failed for $1 >[1=2]
+		exit scan1
+	}
+	echo scanning $2
+	if (! repl/scandb  $excl $dir2 $db2){
+		echo scan failed for $2 >[1=2]
+		exit scan2
+	}
+}
+
+shift ; shift
+
+echo syncing
+repl/syncdb -v $opt $dir1 $dir2 $db1 $db2 $*
+
+exit ''

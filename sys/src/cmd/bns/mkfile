@@ -1,0 +1,25 @@
+</$objtype/mkfile
+
+TARG=bns
+OFILES=\
+	main.$O\
+	volfs.$O\
+	fs.$O\
+	vols.$O\
+	expr.$O\
+	names.$O\
+	util.$O\
+	ctlfs.$O\
+	nilfs.$O\
+	auth.$O\
+
+HFILES=\
+	vols.h\
+	names.h\
+
+BIN=/$objtype/bin
+
+
+
+</sys/src/cmd/mkone
+

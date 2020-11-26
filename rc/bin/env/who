@@ -1,0 +1,10 @@
+#!/bin/rc
+
+test -d /where || { echo who: no /where >'#c/cons' ; exit where }
+
+if (~ $1 -l){
+	grep 'busy|online' /who/*/status | sed -e 's|/who/||' -e 's|/status.*||' 
+}
+if not
+	ofaces -l Who 'env/who -l'
+exit ''

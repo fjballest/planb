@@ -1,0 +1,35 @@
+#!/bin/rc
+
+kind=page
+if (~ $1 -i ){
+	kind=image
+	shift
+}
+if (~ $#* 0 ){
+	echo 'usage: oimage [-i] file'
+	exit usage
+}
+
+
+for (f in $*)@{
+	if (test -r $f) {
+		file=/devs/$sysname^ui/row:wins/col:1/$kind:img.$pid
+		if (~ $kind image)
+			file=/devs/$sysname^ui/row:stats/image:img.$pid
+		switch(`{file $f}){
+		case *jpeg*
+			mkdir $file
+			jpg -9 $f >$file/data
+			echo tag >$file/ctl
+		case *GIF*
+			mkdir $file
+			gif -9 $f >$file/data
+			echo tag >$file/ctl
+		case *plan*
+			mkdir $file
+			cp $f $file/data
+			echo tag >$file/ctl
+		}
+	}
+}
+exit ''

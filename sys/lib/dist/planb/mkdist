@@ -1,0 +1,36 @@
+#!/bin/rc
+
+# Create the Plan B distribution according to changes
+# as reported by /sys/src/README.PlanB
+
+rfork ne
+9fs planb
+9fs once
+CONF=/sys/src/README.PlanB
+DEST=/n/once/4e
+
+if (! test -d  $DEST ) {
+	echo $DEST not found
+	exit bad
+}
+if (! test -e  $CONF ) {
+	echo $CONF not found
+	exit bad
+}
+
+files=`{grep -v '^[ 	]*$' $CONF | grep -v '^#' }
+sfiles=`{grep -v '^[ 	]*$' $CONF | grep -v '^#' | grep -v '^/386/'}
+for (f in $files){
+	if (! test -e $f ) {
+		echo $f does not exist
+		exit bad
+	}
+}
+tar cv $files > $DEST/4e.tar
+tar cv $sfiles > $DEST/4e.src.tar
+cd $DEST
+gzip -9 4e.tar
+gzip -9 4e.src.tar
+ls -l 4e.*
+echo cp 4e.tgz /usr/planb/doc/www/export/planb4e.tgz
+echo cp 4e.src.tgz /usr/planb/doc/www/export/planb4e.src.tgz

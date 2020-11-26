@@ -1,0 +1,13 @@
+#!/bin/rc
+rfork e
+U=`{cat /dev/user}
+for(i){
+	if (~ $i [0-9]*){
+		echo kill > /proc/$i/notepg
+	}
+	if not {
+		ps | sed -n '/^'$U' .* '$i'$/s%[^ ]*  *%~>/proc/%
+		s%  *.*%/note%
+		s%~%echo kill%p'
+	}
+}

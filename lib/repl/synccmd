@@ -1,0 +1,29 @@
+#!/bin/rc
+
+if (~ $sysname whale aquamar)
+	exit 'Run it on your computer terminal'
+
+fn noauth {
+	echo has no auth for $1
+	exit noauth
+}
+
+fn hasauth {
+	dir=$1
+	touch $1/.$pid	|| noauth $1
+	chgrp -o sys $1/.$pid || noauth $1
+	rm $1/.$pid
+}
+
+test -e /srv/fsssync || echo srv -PWA fsssync >> /srv/fscons
+mount -c /srv/fsssync /n/fossil
+mount -c /srv/fsssync /n/bfossil
+9fs whale
+9fs planb
+
+
+# hasauth /n/planb
+hasauth /n/fossil
+
+repl/sync -r1 /lib/repl/asys  /lib/repl/lsys
+repl/sync -1 /lib/repl/ahome  /lib/repl/lhome

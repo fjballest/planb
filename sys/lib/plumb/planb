@@ -1,0 +1,149 @@
+# these are generally in order from most specific to least,
+# since first rule that fires wins.
+
+include fileaddr
+
+# declarations of ports without rules
+plumb to seemail
+plumb to showmail
+
+# man(1) page goes to page
+type	is	text
+data	matches	'([a-zA-Z¡-￿0-9_\-./]+)\(([1-8])\)'
+plumb	start	 rc -c 'man '$2' '$1' | plumb -i -d edit -p /mnt/plumb/edit -a ''action=showdata filename=/man/'$2/$1''''
+
+# cheap http/gif,jpeg,ps,pdf,bmp renderer
+type is text
+data matches '(https?|ftp|file|gopher|mailto|news|nntp|telnet|wais|prospero)://[a-zA-Z0-9_@\-]+([.:][a-zA-Z0-9_@\-]+)*/?[a-zA-Z0-9_?,%#~&/\-+=]+([:.][a-zA-Z0-9_?,%#~&/\-+=]+)*\.(jpe?g|JPE?G|gif|GIF|ps|PS|pdf|PDF|png|PNG|bmp|BMP)'
+plumb start rc -c 'hget '$0' | page -w'
+
+# links urls go to snarf
+src is links #eliminate recursive links
+type is text
+data matches $url
+plumb start wurl2snarf $0
+
+# urls go to links
+type is text
+data matches $url
+plumb to www
+plumb start window -r 356 35 1024 768 links ''''$0''''
+
+
+# rtf files go to wdoc2txt
+type is text
+data matches '[a-zA-Z¡-￿0-9_\-./]+'
+data matches '([a-zA-Z¡-￿0-9_\-./]+)\.rtf'
+arg isfile	$0
+plumb to msword
+plumb start wdoc2txt $file
+
+# start rule for microsoft word documents without .doc suffix
+type is text
+dst is msword
+plumb to msword
+plumb start wdoc2txt $file
+
+# email addresses get a new mail window
+type is text
+data matches '[a-zA-Z0-9_+.\-]+@[a-zA-Z0-9_+.\-]*'
+plumb to sendmail
+plumb start window rc -c '''echo % mail '''$0'; mail '$0
+
+# image files go to page
+type is text
+data matches '[a-zA-Z¡-￿0-9_\-./]+'
+data matches '([a-zA-Z¡-￿0-9_\-./]+)\.(jpe?g|JPE?G|gif|GIF|tiff?|TIFF?|ppm|PPM|bit|BIT|png|PNG)'
+arg isfile	$0
+plumb to image
+plumb client page -wi
+
+# postscript/pdf/dvi/doc go to page but not over the a plumb port
+# the port is here for reference but is unused
+type is text
+data matches '[a-zA-Z¡-￿0-9_\-./]+'
+data matches '([a-zA-Z¡-￿0-9_\-./]+)\.(ps|PS|eps|EPS|pdf|PDF|dvi|DVI|doc|DOC)'
+arg isfile	$0
+plumb to postscript
+plumb start page -w $file
+
+# existing files, possibly tagged by line number, go to editor
+type is text
+data matches '([.a-zA-Z¡-￿0-9_/\-]*[a-zA-Z¡-￿0-9_/\-])('$addr')?'
+arg isfile	$1
+data set	$file
+attr add	addr=$3
+plumb to edit
+plumb client window -m $editor
+
+# .h files are looked up in /sys/include and passed to edit
+type is text
+data matches '([a-zA-Z¡-￿0-9]+\.h)('$addr')?'
+arg isfile	/sys/include/$1
+data set	$file
+attr add	addr=$3
+plumb to edit
+plumb client window $editor
+
+# .m files are looked up in /sys/module and passed to edit
+type is text
+data matches '([a-zA-Z¡-￿0-9]+\.m)('$addr')?'
+arg isfile	/sys/module/$1
+data set	$file
+attr add	addr=$3
+plumb to edit
+plumb client window $editor
+
+# faces -> new mail window for message
+type	is	text
+data	matches	'[a-zA-Z¡-￿0-9_\-./]+'
+data	matches	'/mail/fs/[a-zA-Z¡-￿0-9/]+/[0-9]+'
+plumb	to	showmail
+plumb	start	window -r 4 120 750 600 upas/nedmail -s $0
+
+# man[1] page goes to page viewer
+type	is	text
+data	matches	'([a-zA-Z¡-￿0-9_\-./]+)\[([1-8])\]'
+plumb	to	man
+plumb	start	 rc -c 'man -t '$2' '$1' | page  -w'
+
+
+# start rule for images without known suffixes
+dst is image
+plumb to image
+plumb client page -wi
+
+# start rule for postscript without known suffixes
+dst is postscript
+arg isfile $data
+plumb start page -w $data
+
+# to play mp3 audio files
+type	is	text
+data	matches	'[a-zA-Z¡-￿0-9_\-./]+'
+data	matches	'([a-zA-Z¡-￿0-9_\-./]+\.mp3)'
+arg	isfile	$0
+plumb	to song
+plumb	start	oplayer $file
+
+# to play mp3 audio dirs
+type	is	text
+data	matches	'[a-zA-Z¡-￿0-9_\-./]+'
+data	matches	'(/n/music/[a-zA-Z¡-￿0-9_\-./]+)'
+plumb	to song
+plumb	start	oplayer $0
+
+type	is	text
+data	matches	'voice: (.*)'
+plumb	to	voice
+plumb	start	speak $1
+
+type	is	text
+data	matches	'exec (.*)'
+plumb	to	exec
+
+type	is	text
+data	matches	'Local (.*)'
+plumb	to	none
+plumb	start	rc -c $1
+

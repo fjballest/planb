@@ -1,0 +1,4 @@
+#!/bin/rc
+db=/n/fossil/dist/repl/lprof.db
+dir=/n/fossil/usr/prof
+excl=()

@@ -1,0 +1,49 @@
+#!/bin/rc
+# Default program to assign role to machines (screens actually).
+# This is expected to be customized by each user.
+
+# 1. cpu servers are always "server"
+# 2. machines with role "main" retain it while colocated with user, and
+#    become "remote" otherwise.
+# 3. The terminal with biggest screen colocated with user is "primary"
+# 4. Other terminals colocated with the user are "other"
+# 5. Remote terminals are "remote"
+
+if (~ $#1 0)
+	m=$sysname
+if not
+	m=$1
+rfork ne
+if (test -e /what/$m/role && grep server /what/$m/role >/dev/null){
+	echo server
+	exit ''
+}
+if (test -r /who/$user/where)
+	loc=`{cat /who/$user/where}
+if not
+	loc=$location
+
+# lterms are terminals collocated with user sorted by vgasize.maxx
+terms=`{env/terms}
+lterms=`{
+	@{ for (term in $terms){
+		if (test -e /what/$term/vgasize && test -e /what/$term/where)
+		if (~ `{cat /what/$term/where} $loc)
+			echo `{cat /what/$term/vgasize} $term
+	} } | sort +2nr | sed 's/.* //'
+}
+if (~ $#lterms 0 || { echo $lterms | grep -v $m >/dev/null})
+	echo remote
+if not {
+	if (~ $lterms(1) $m)
+		echo primary
+	if not {
+		if (grep main /what/$m/role >/dev/null)
+			echo main
+		if not
+			echo other
+	}
+}
+exit ''
+echo $role
+exit ''

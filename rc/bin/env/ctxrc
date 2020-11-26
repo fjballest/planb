@@ -1,0 +1,16 @@
+#!/bin/rc
+
+# To be run at a server, to update things as they change.
+
+rfork ne
+
+bfs /devs/x10
+bfs /devs/hx
+
+env/uam2who &
+env/pc2who &
+env/mail2who &
+env/x10outside &
+env/who2uam -d &
+env/who2web -d &
+
